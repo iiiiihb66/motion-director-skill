@@ -1,0 +1,58 @@
+[
+  {
+    "name": "entry",
+    "start": 0.65,
+    "end": 3.4818,
+    "text": "一桩案件，是通向整个社会的入口。",
+    "sourceDuration": 2.831769,
+    "tempo": 1
+  },
+  {
+    "name": "evidence",
+    "start": 6.65,
+    "end": 9.2907,
+    "text": "让证据说话，让判断经得起检验。",
+    "sourceDuration": 2.64068,
+    "tempo": 1
+  },
+  {
+    "name": "causes",
+    "start": 12.65,
+    "end": 16.1209,
+    "text": "个体，环境，机会。犯罪如何发生？",
+    "sourceDuration": 3.47093,
+    "tempo": 1
+  },
+  {
+    "name": "victims",
+    "start": 18.65,
+    "end": 21.7086,
+    "text": "看见伤害，倾听沉默，让保护抵达。",
+    "sourceDuration": 3.058639,
+    "tempo": 1
+  },
+  {
+    "name": "prevention",
+    "start": 24.65,
+    "end": 27.4046,
+    "text": "从理解到预防，让改变先于伤害。",
+    "sourceDuration": 2.754626,
+    "tempo": 1
+  },
+  {
+    "name": "justice",
+    "start": 30.65,
+    "end": 33.2495,
+    "text": "以事实为基础，以公平为尺度。",
+    "sourceDuration": 2.599501,
+    "tempo": 1
+  },
+  {
+    "name": "title",
+    "start": 36.5,
+    "end": 39.9131,
+    "text": "犯罪学。理解犯罪，让社会更安全。",
+    "sourceDuration": 3.413061,
+    "tempo": 1
+  }
+]

@@ -2,20 +2,22 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>《犯罪学》(CRIMINOLOGY) — 动态视觉音乐视频</title>
+<title>Motion Director — 动态代码视觉引擎</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
   :root { color-scheme: dark; }
   html, body { margin: 0; height: 100%; background: #050505; color: #eee9df; font: 12px/1.4 ui-monospace, Menlo, monospace; overflow: hidden; }
   #wrap { position: absolute; inset: 0 0 64px 0; display: flex; align-items: center; justify-content: center; }
   #c { max-width: 100%; max-height: 100%; aspect-ratio: 16/9; background: #000; cursor: pointer; }
-  #ui { position: absolute; left: 0; right: 0; bottom: 0; height: 64px; padding: 6px 12px; box-sizing: border-box; background: #0b0b0c; }
+  #ui { position: absolute; left: 0; right: 0; bottom: 0; height: 64px; padding: 6px 12px; box-sizing: border-box; background: #0b0b0c; display: flex; flex-direction: column; justify-content: space-between; }
   #ui.hidden { display: none; } #ui.hidden ~ #wrap { bottom: 0; }
-  #scrub { width: 100%; margin: 0; accent-color: #ff4d12; }
+  #scrub { width: 100%; margin: 0; accent-color: #00ffc3; }
   #marks { position: relative; height: 16px; }
-  .mark { position: absolute; top: 0; height: 14px; border-left: 1px solid #ff4d12; color: #9c978f; font-size: 9px; overflow: hidden; white-space: nowrap; padding-left: 2px; cursor: pointer; box-sizing: border-box; }
-  .mark:hover { color: #eee9df; background: #ff4d1222; }
+  .mark { position: absolute; top: 0; height: 14px; border-left: 1px solid #00ffc3; color: #9c978f; font-size: 9px; overflow: hidden; white-space: nowrap; padding-left: 2px; cursor: pointer; box-sizing: border-box; }
+  .mark:hover { color: #eee9df; background: #00ffc322; }
+  #info-bar { display: flex; justify-content: space-between; align-items: center; }
   #info { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #9c978f; }
+  #projSelect { background: #18191c; color: #00ffc3; border: 1px solid #00ffc3; border-radius: 3px; font-size: 11px; padding: 1px 6px; cursor: pointer; }
   #errs { display: none; position: fixed; top: 8px; left: 8px; right: 8px; max-height: 40vh; overflow: auto; background: #300; color: #fbb; padding: 8px; white-space: pre-wrap; z-index: 9; }
   body.export #ui, body.export #errs { display: none !important; }
   body.export #wrap { inset: 0; }
@@ -27,7 +29,16 @@
 <div id="ui">
   <div id="marks"></div>
   <input id="scrub" type="range" min="0" value="0" />
-  <div id="info"></div>
+  <div id="info-bar">
+    <div id="info"></div>
+    <div>
+      <label style="color:#00ffc3;margin-right:4px;">PROJECT:</label>
+      <select id="projSelect">
+        <option value="abg">αβΓ✻1 (ABG One) Promo</option>
+        <option value="criminology">《犯罪学》(CRIMINOLOGY) MV</option>
+      </select>
+    </div>
+  </div>
 </div>
 <pre id="errs"></pre>
 <script type="module" src="/src/main.ts"></script>

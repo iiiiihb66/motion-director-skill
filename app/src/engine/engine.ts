@@ -147,7 +147,7 @@ export class Engine {
       const d = e.caption!.delay ?? 0.3;
       return { start: e.start + d, end: e.start + d + (e.caption!.dur ?? 4.5), fig: e.caption!.fig, text: e.caption!.text };
     });
-    this.hud = new Hud(new PDoom(this.lyrics), captions);
+    this.hud = new Hud(new PDoom(this.lyrics), captions, this.lyrics);
     const entries = only ? this.timeline.filter(only) : this.timeline;
     await Promise.all(entries.map((e) => this.loadEntry(e)));
   }

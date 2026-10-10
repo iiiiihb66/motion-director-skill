@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motion Designer Showreel - 15s</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        #canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .title {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 8vw;
+            font-weight: 900;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            opacity: 0;
+            text-shadow: 0 0 20px rgba(255,255,255,0.5);
+        }
+
+        .subtitle {
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2vw;
+            font-weight: 300;
+            color: #fff;
+            letter-spacing: 0.3em;
+            opacity: 0;
+        }
+
+        .logo {
+            position: absolute;
+            bottom: 10%;
+            right: 5%;
+            font-size: 1.5vw;
+            font-weight: 700;
+            color: #fff;
+            opacity: 0;
+            mix-blend-mode: difference;
+        }
+
+        .progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #ff00ff, #00ffff);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="overlay">
+        <div class="title" id="title">MOTION</div>
+        <div class="subtitle" id="subtitle">DESIGNER</div>
+        <div class="logo" id="logo">SHOWREEL 2026</div>
+        <div class="progress" id="progress"></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        const startTime = Date.now();
+        const duration = 15000; // 15 seconds
+
+        // Particle system
+        class Particle {
+            constructor(x, y, vx, vy, size, color, life) {
+                this.x = x;
+                this.y = y;
+                this.vx = vx;
+                this.vy = vy;
+                this.size = size;
+                this.color = color;
+                this.life = life;
+                this.maxLife = life;
+                this.alpha = 1;
+            }
+
+            update(dt) {
+                this.x += this.vx * dt;
+                this.y += this.vy * dt;
+                this.life -= dt;
+                this.alpha = this.life / this.maxLife;
+                
+                // Add some physics
+                this.vy += 0.3 * dt;
+                this.vx *= 0.99;
+                this.vy *= 0.99;
+            }
+
+            draw() {
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        // Shape morphing system
+        class MorphShape {
+            constructor() {
+                this.points = [];
+                this.targetPoints = [];
+                this.numPoints = 8;
+                this.radius = 150;
+                this.initPoints();
+            }
+
+            initPoints() {
+                for (let i = 0; i < this.numPoints; i++) {
+                    const angle = (i / this.numPoints) * Math.PI * 2;
+                    const x = Math.cos(angle) * this.radius;
+                    const y = Math.sin(angle) * this.radius;
+                    this.points.push({ x, y });
+                    this.targetPoints.push({ x, y });
+                }
+            }
+
+            morph(time) {
+                for (let i = 0; i < this.numPoints; i++) {
+                    const angle = (i / this.numPoints) * Math.PI * 2;
+                    const noise = Math.sin(time * 0.001 + i) * 50;
+                    this.targetPoints[i].x = Math.cos(angle) * (this.radius + noise);
+                    this.targetPoints[i].y = Math.sin(angle) * (this.radius + noise);
+                }
+
+                // Smooth interpolation
+                for (let i = 0; i < this.numPoints; i++) {
+                    this.points[i].x += (this.targetPoints[i].x - this.points[i].x) * 0.1;
+                    this.points[i].y += (this.targetPoints[i].y - this.points[i].y) * 0.1;
+                }
+            }
+
+            draw(x, y, hue) {
+                ctx.save();
+                ctx.translate(x, y);
+                
+                // Fill
+                ctx.beginPath();
+                ctx.moveTo(this.points[0].x, this.points[0].y);
+                for (let i = 1; i < this.points.length; i++) {
+                    const xc = (this.points[i].x + this.points[(i + 1) % this.points.length].x) / 2;
+                    const yc = (this.points[i].y + this.points[(i + 1) % this.points.length].y) / 2;
+                    ctx.quadraticCurveTo(this.points[i].x, this.points[i].y, xc, yc);
+                }
+                ctx.closePath();
+                
+                const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.radius);
+                gradient.addColorStop(0, `hsla(${hue}, 100%, 60%, 0.8)`);
+                gradient.addColorStop(1, `hsla(${hue + 60}, 100%, 50%, 0.2)`);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+                
+                // Stroke
+                ctx.strokeStyle = `hsla(${hue}, 100%, 70%, 0.9)`;
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                ctx.restore();
+            }
+        }
+
+        const particles = [];
+        const shapes = [new MorphShape(), new MorphShape(), new MorphShape()];
+        
+        // Scene timeline
+        const scenes = [
+            { start: 0, end: 2000, name: 'explosion' },
+            { start: 2000, end: 5000, name: 'particles' },
+            { start: 5000, end: 8000, name: 'morph' },
+            { start: 8000, end: 11000, name: 'grid' },
+            { start: 11000, end: 14000, name: 'wave' },
+            { start: 14000, end: 15000, name: 'finale' }
+        ];
+
+        function getCurrentScene(elapsed) {
+            for (let scene of scenes) {
+                if (elapsed >= scene.start && elapsed < scene.end) {
+                    return { ...scene, progress: (elapsed - scene.start) / (scene.end - scene.start) };
+                }
+            }
+            return scenes[scenes.length - 1];
+        }
+
+        function spawnParticles(x, y, count, speedMult = 1) {
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = (Math.random() * 3 + 1) * speedMult;
+                const vx = Math.cos(angle) * speed;
+                const vy = Math.sin(angle) * speed;
+                const size = Math.random() * 4 + 2;
+                const hue = Math.random() * 360;
+                const color = `hsl(${hue}, 100%, 60%)`;
+                const life = Math.random() * 60 + 40;
+                particles.push(new Particle(x, y, vx, vy, size, color, life));
+            }
+        }
+
+        function drawExplosion(elapsed, progress) {
+            const centerX = width / 2;
+            const centerY = height / 2;
+            
+            if (progress < 0.1 && particles.length < 200) {
+                spawnParticles(centerX, centerY, 20, 5);
+            }
+
+            // Radial lines
+            const numLines = 24;
+            for (let i = 0; i < numLines; i++) {
+                const angle = (i / numLines) * Math.PI * 2;
+                const length = progress * 500;
+                const x2 = centerX + Math.cos(angle) * length;
+                const y2 = centerY + Math.sin(angle) * length;
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(x2, y2);
+                ctx.strokeStyle = `hsla(${i * 15}, 100%, 60%, ${1 - progress})`;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            // Title animation
+            const title = document.getElementById('title');
+            if (progress > 0.3) {
+                title.style.opacity = Math.min(1, (progress - 0.3) / 0.3);
+                const scale = 0.5 + (1 - Math.abs(progress - 0.65)) * 0.5;
+                title.style.transform = `translate(-50%, -50%) scale(${scale})`;
+            }
+        }
+
+        function drawParticleField(elapsed, progress) {
+            const time = elapsed;
+            
+            // Spawn particles continuously
+            if (Math.random() < 0.3) {
+                spawnParticles(Math.random() * width, Math.random() * height, 3, 0.5);
+            }
+
+            // Draw connections
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 100) {
+                        ctx.globalAlpha = (1 - dist / 100) * 0.3;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                        ctx.globalAlpha = 1;
+                    }
+                }
+            }
+
+            // Subtitle fade in
+            const subtitle = document.getElementById('subtitle');
+            if (progress > 0.2) {
+                subtitle.style.opacity = Math.min(1, (progress - 0.2) / 0.3);
+            }
+        }
+
+        function drawMorphShapes(elapsed, progress) {
+            shapes[0].morph(elapsed);
+            shapes[1].morph(elapsed + 1000);
+            shapes[2].morph(elapsed + 2000);
+
+            const centerX = width / 2;
+            const centerY = height / 2;
+            
+            const offset = Math.sin(elapsed * 0.001) * 100;
+            shapes[0].draw(centerX - 200 + offset, centerY, (elapsed * 0.1) % 360);
+            shapes[1].draw(centerX, centerY - 150, (elapsed * 0.1 + 120) % 360);
+            shapes[2].draw(centerX + 200 - offset, centerY, (elapsed * 0.1 + 240) % 360);
+
+            // Fade out title, subtitle
+            const title = document.getElementById('title');
+            const subtitle = document.getElementById('subtitle');
+            title.style.opacity = Math.max(0, 1 - progress * 2);
+            subtitle.style.opacity = Math.max(0, 1 - progress * 2);
+        }
+
+        function drawGrid(elapsed, progress) {
+            const gridSize = 40;
+            const time = elapsed * 0.001;
+            
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 1;
+
+            // Vertical lines
+            for (let x = 0; x < width; x += gridSize) {
+                const wave = Math.sin(time * 2 + x * 0.01) * 30;
+                ctx.beginPath();
+                for (let y = 0; y < height; y += 5) {
+                    const offset = Math.sin(time * 3 + y * 0.02 + x * 0.01) * wave;
+                    ctx.lineTo(x + offset, y);
+                }
+                ctx.stroke();
+            }
+
+            // Horizontal lines
+            for (let y = 0; y < height; y += gridSize) {
+                const wave = Math.sin(time * 2 + y * 0.01) * 30;
+                ctx.beginPath();
+                for (let x = 0; x < width; x += 5) {
+                    const offset = Math.sin(time * 3 + x * 0.02 + y * 0.01) * wave;
+                    ctx.lineTo(x, y + offset);
+                }
+                ctx.stroke();
+            }
+
+            // Glowing orbs
+            for (let i = 0; i < 5; i++) {
+                const angle = time + i * (Math.PI * 2 / 5);
+                const radius = 200 + Math.sin(time * 2 + i) * 50;
+                const x = width / 2 + Math.cos(angle) * radius;
+                const y = height / 2 + Math.sin(angle) * radius;
+                
+                const gradient = ctx.createRadialGradient(x, y, 0, x, y, 30);
+                gradient.addColorStop(0, `hsla(${i * 72}, 100%, 60%, 0.8)`);
+                gradient.addColorStop(1, `hsla(${i * 72}, 100%, 60%, 0)`);
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(x, y, 30, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function drawWave(elapsed, progress) {
+            const time = elapsed * 0.001;
+            const numWaves = 20;
+            
+            for (let i = 0; i < numWaves; i++) {
+                const hue = (i / numWaves) * 360;
+                const phase = (i / numWaves) * Math.PI * 2;
+                
+                ctx.strokeStyle = `hsla(${hue}, 100%, 60%, 0.6)`;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                
+                for (let x = 0; x < width; x += 5) {
+                    const y = height / 2 + 
+                             Math.sin(x * 0.01 + time * 2 + phase) * 50 +
+                             Math.sin(x * 0.02 + time * 3 + phase) * 30 +
+                             (i - numWaves / 2) * 15;
+                    
+                    if (x === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.stroke();
+            }
+
+            // Logo fade in
+            const logo = document.getElementById('logo');
+            if (progress > 0.5) {
+                logo.style.opacity = Math.min(1, (progress - 0.5) / 0.3);
+            }
+        }
+
+        function drawFinale(elapsed, progress) {
+            // White flash
+            ctx.fillStyle = `rgba(255, 255, 255, ${1 - progress})`;
+            ctx.fillRect(0, 0, width, height);
+
+            // Particle burst
+            if (progress < 0.3) {
+                spawnParticles(width / 2, height / 2, 30, 8);
+            }
+
+            // Radial burst
+            const numRays = 48;
+            for (let i = 0; i < numRays; i++) {
+                const angle = (i / numRays) * Math.PI * 2;
+                const length = progress * 1000;
+                const x1 = width / 2 + Math.cos(angle) * 50;
+                const y1 = height / 2 + Math.sin(angle) * 50;
+                const x2 = width / 2 + Math.cos(angle) * length;
+                const y2 = height / 2 + Math.sin(angle) * length;
+                
+                const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
+                gradient.addColorStop(0, `hsla(${i * 7.5}, 100%, 70%, 0.8)`);
+                gradient.addColorStop(1, `hsla(${i * 7.5}, 100%, 70%, 0)`);
+                
+                ctx.strokeStyle = gradient;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+        }
+
+        function animate() {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(1, elapsed / duration);
+            
+            // Update progress bar
+            document.getElementById('progress').style.width = `${progress * 100}%`;
+
+            // Clear canvas
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, width, height);
+
+            // Get current scene
+            const scene = getCurrentScene(elapsed);
+
+            // Render scene
+            switch(scene.name) {
+                case 'explosion':
+                    drawExplosion(elapsed, scene.progress);
+                    break;
+                case 'particles':
+                    drawParticleField(elapsed, scene.progress);
+                    break;
+                case 'morph':
+                    drawMorphShapes(elapsed, scene.progress);
+                    break;
+                case 'grid':
+                    drawGrid(elapsed, scene.progress);
+                    break;
+                case 'wave':
+                    drawWave(elapsed, scene.progress);
+                    break;
+                case 'finale':
+                    drawFinale(elapsed, scene.progress);
+                    break;
+            }
+
+            // Update and draw particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update(1);
+                particles[i].draw();
+                if (particles[i].life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            if (elapsed < duration) {
+                requestAnimationFrame(animate);
+            } else {
+                // Loop
+                setTimeout(() => {
+                    particles.length = 0;
+                    window.location.reload();
+                }, 1000);
+            }
+        }
+
+        // Handle resize
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        // Start animation
+        animate();
+    </script>
+</body>
+</html>

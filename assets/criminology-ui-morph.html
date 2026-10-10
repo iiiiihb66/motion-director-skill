@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>犯罪学 UI 变形循环 · Criminology UI Morph</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0c10;font-family:'Geist',-apple-system,BlinkMacSystemFont,sans-serif;overflow:hidden;color:#e8eaed;display:flex;align-items:center;justify-content:center;min-height:100vh}
+#app{width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px}
+#canvas{display:block;width:min(90vmin,1440px);height:min(90vmin,1440px);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.6);cursor:crosshair}
+#controls{display:flex;gap:16px;align-items:center;padding:16px 24px;background:rgba(15,20,25,.92);border-radius:999px;border:1px solid rgba(232,234,237,.08)}
+#play{background:#ff3d55;border:none;color:#fff;width:48px;height:48px;border-radius:50%;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;transition:transform .2s}
+#play:hover{transform:scale(1.05)}
+#play:active{transform:scale(.95)}
+#time{font:12px 'Geist Mono',monospace;color:#9ca3af;font-variant-numeric:tabular-nums;min-width:100px}
+#state{font:11px 'Geist Mono',monospace;color:#6b7280;text-transform:uppercase;letter-spacing:1px}
+.info{position:fixed;top:24px;left:50%;transform:translateX(-50%);background:rgba(15,20,25,.88);padding:12px 20px;border-radius:16px;font-size:12px;color:#9ca3af;border:1px solid rgba(232,234,237,.06)}
+</style>
+</head>
+<body>
+<div class="info">犯罪学 UI 动态 · 120 BPM · 按空格播放 · 光标驱动交互</div>
+<div id="app">
+  <canvas id="canvas" width="1440" height="1440"></canvas>
+  <div id="controls">
+    <button id="play">▶</button>
+    <span id="time">00.00 / 14.00</span>
+    <span id="state">案件开启</span>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ============================================================================
+// Constants & Setup
+// ============================================================================
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d', {alpha: false});
+const W = 1440, H = 1440;
+const BPM = 120;
+const BEAT = 60 / BPM; // 0.5s per beat
+const DURATION = BEAT * 28; // 7 bars = 28 beats = 14 seconds
+
+// Theme colors (criminology: dark investigation theme)
+const BG = '#f8f7f4'; // warm light gray canvas (Dribbble style)
+const FG = '#1a1d23'; // black
+const WHITE = '#ffffff';
+const ACCENT = '#ff3d55'; // alert red
+const MUTED = '#6b7280';
+
+// UI states timeline (28 beats, ~2-2.5s per state)
+const STATES = [
+  {name: '案件开启', start: 0, end: 2.5},      // 0-2.5s (5 beats)
+  {name: '证据扫描', start: 2.5, end: 5},      // 2.5-5s (5 beats)
+  {name: '标记确认', start: 5, end: 6.5},      // 5-6.5s (3 beats)
+  {name: '警示横幅', start: 6.5, end: 8.5},    // 6.5-8.5s (4 beats)
+  {name: '录音播放', start: 8.5, end: 10},     // 8.5-10s (3 beats)
+  {name: '时间轴', start: 10, end: 11.5},      // 10-11.5s (3 beats)
+  {name: '证据等级', start: 11.5, end: 13},    // 11.5-13s (3 beats)
+  {name: '状态开关', start: 13, end: 14},      // 13-14s (2 beats) - loops back
+];
+
+// ============================================================================
+// Utility Functions
+// ============================================================================
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const lerp = (a, b, t) => a + (b - a) * t;
+const smoothstep = x => {x = clamp(x); return x * x * (3 - 2 * x)};
+
+// Ease functions (no bounce, spring only)
+const ease = {
+  inOut: x => {x = clamp(x); return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2},
+  out: x => {x = clamp(x); return 1 - Math.pow(1 - x, 3)},
+  in: x => {x = clamp(x); return x * x * x},
+};
+
+// Spring physics (closed-form damped harmonic oscillator)
+// zeta = 0.7 (slight overshoot), omega = 8 rad/s
+function spring(x, zeta = 0.7, omega = 8) {
+  if (x <= 0) return 0;
+  if (x >= 1.5) return 1; // settled
+  const wd = omega * Math.sqrt(1 - zeta * zeta);
+  const A = 1;
+  const B = (zeta * omega) / wd;
+  return 1 - Math.exp(-zeta * omega * x) * (A * Math.cos(wd * x) + B * Math.sin(wd * x));
+}
+
+// Spring with different lead/trail (liquid tab indicator effect)
+function springLead(x) { return spring(x, 0.6, 10); } // faster, more overshoot
+function springTrail(x) { return spring(x, 0.8, 7); } // slower, less overshoot
+
+// Progress in time range
+const prog = (t, s, e, fn = smoothstep) => {
+  if (t <= s) return 0;
+  if (t >= e) return 1;
+  return fn((t - s) / (e - s));
+};
+
+// ============================================================================
+// Mouse/Cursor State
+// ============================================================================
+let mouse = {x: W / 2, y: H / 2, down: false, downAt: -1};
+
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  mouse.x = (e.clientX - rect.left) * (W / rect.width);
+  mouse.y = (e.clientY - rect.top) * (H / rect.height);
+});
+
+canvas.addEventListener('mousedown', e => {
+  mouse.down = true;
+  mouse.downAt = time;
+});
+
+canvas.addEventListener('mouseup', () => {
+  mouse.down = false;
+});
+
+// ============================================================================
+// Drawing Helpers
+// ============================================================================
+function rect(x, y, w, h, color, alpha = 1) {
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = color;
+  ctx.fillRect(x, y, w, h);
+  ctx.globalAlpha = 1;
+}
+
+function roundRect(x, y, w, h, r, color, alpha = 1) {
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, r);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+function circle(x, y, r, color, alpha = 1) {
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+function strokeCircle(x, y, r, color, width = 2, alpha = 1) {
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+}
+
+function line(x1, y1, x2, y2, color, width = 2, alpha = 1) {
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+}
+
+function text(str, x, y, size, color, weight = 500, align = 'center', alpha = 1) {
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = color;
+  ctx.font = `${weight} ${size}px Geist, -apple-system, sans-serif`;
+  ctx.textAlign = align;
+  ctx.textBaseline = 'middle';
+  ctx.fillText(str, x, y);
+  ctx.globalAlpha = 1;
+}
+
+// ============================================================================
+// Main Shape: One element morphs through all states
+// ============================================================================
+function renderShape(t) {
+  const cx = W / 2, cy = H / 2;
+  
+  // Determine current state
+  let stateIdx = 0;
+  for (let i = 0; i < STATES.length; i++) {
+    if (t >= STATES[i].start && t < STATES[i].end) {
+      stateIdx = i;
+      break;
+    }
+  }
+  
+  const state = STATES[stateIdx];
+  const u = t - state.start; // local time
+  const dur = state.end - state.start;
+  
+  // -------------------------------------------------------------------------
+  // State 0: Case Open Button
+  // -------------------------------------------------------------------------
+  if (stateIdx === 0) {
+    const p = spring(u / 1.2);
+    const w = lerp(0, 280, p);
+    const h = lerp(0, 80, p);
+    const r = 40;
+    
+    roundRect(cx - w / 2, cy - h / 2, w, h, r, FG, p);
+    
+    // Hover scale
+    const dx = mouse.x - cx, dy = mouse.y - cy;
+    const hover = Math.sqrt(dx * dx + dy * dy) < 150 ? 0.05 : 0;
+    const scale = 1 + hover * spring((u - 0.5) * 2);
+    
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(scale, scale);
+    ctx.translate(-cx, -cy);
+    text('OPEN CASE', cx, cy, 20, WHITE, 600, 'center', p);
+    ctx.restore();
+    
+    // Click ripple
+    if (mouse.down && u > 1) {
+      const ripple = prog(u, 1.5, 2.5, ease.out);
+      strokeCircle(cx, cy, ripple * 200, ACCENT, 3, 1 - ripple);
+    }
+  }
+  
+  // -------------------------------------------------------------------------
+  // State 1: Scanner (rotating ring)
+  // -------------------------------------------------------------------------
+  else if (stateIdx === 1) {
+    const enter = spring(u / 0.8);
+    const rotation = u * Math.PI * 2;
+    
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(rotation);
+    
+    // Outer ring
+    ctx.strokeStyle = FG;
+    ctx.lineWidth = 4;
+    ctx.globalAlpha = enter;
+    ctx.beginPath();
+    ctx.arc(0, 0, 80, 0, Math.PI * 1.5);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    
+    // Accent arc
+    ctx.strokeStyle = ACCENT;
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.arc(0, 0, 80, 0, Math.PI * 0.3);
+    ctx.stroke();
+    
+    ctx.restore();
+    
+    text('SCANNING', cx, cy + 140, 14, MUTED, 500, 'center', enter);
+  }
+  
+  // -------------------------------------------------------------------------
+  // State 2: Evidence Verified (checkmark)
+  // -------------------------------------------------------------------------
+  else if (stateIdx === 2) {
+    const p = spring(u / 0.6);
+    circle(cx, cy, 60 * p, ACCENT, p);
+    
+    // Checkmark path
+    const check = prog(u, 0.3, 1.2, ease.out);
+    ctx.strokeStyle = WHITE;
+    ctx.lineWidth = 6;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(cx - 20, cy);
+    const px1 = lerp(cx - 20, cx - 5, clamp(check * 2));
+    const py1 = lerp(cy, cy + 15, clamp(check * 2));
+    ctx.lineTo(px1, py1);
+    if (check > 0.5) {
+      const px2 = lerp(cx - 5, cx + 25, clamp((check - 0.5) * 2));
+      const py2 = lerp(cy + 15, cy - 20, clamp((check - 0.5) * 2));
+      ctx.lineTo(px2, py2);
+    }
+    ctx.stroke();
+    
+    text('VERIFIED', cx, cy + 100, 14, MUTED, 500);
+  }
+  
+  // -------------------------------------------------------------------------
+  // State 3: Alert Banner (dynamic island expand)
+  // -------------------------------------------------------------------------
+  else if (stateIdx === 3) {
+    const expand = spring(u / 1.5);
+    const w = lerp(120, 420, expand);
+    const h = lerp(48, 72, expand);
+    const r = h / 2;
+    
+    roundRect(cx - w / 2, cy - h / 2, w, h, r, FG);
+    
+    const textAlpha = prog(u, 0.5, 1.5);
+    text('⚠ CRITICAL EVIDENCE FOUND', cx, cy, 16, WHITE, 600, 'center', textAlpha);
+  }
+  
+  // -------------------------------------------------------------------------
+  // State 4: Audio Playback (play/pause toggle)
+  // -------------------------------------------------------------------------
+  else if (stateIdx === 4) {
+    const size = 90;
+    circle(cx, cy, size, FG);
+    
+    // Play/pause morph (toggles on beat)
+    const beat = Math.floor(u / BEAT);
+    const isPlaying = beat % 2 === 0;
+    const morph = smoothstep((u % BEAT) / (BEAT * 0.3));
+    
+    ctx.fillStyle = WHITE;
+    ctx.beginPath();
+    if (isPlaying) {
+      // Play triangle
+      const s = 30;
+      ctx.moveTo(cx - s * 0.3, cy - s);
+      ctx.lineTo(cx - s * 0.3, cy + s);
+      ctx.lineTo(cx + s * 0.8, cy);
+    } else {
+      // Pause bars
+      const w = 10, h = 40, gap = 12;
+      ctx.rect(cx - gap / 2 - w, cy - h / 2, w, h);
+      ctx.rect(cx + gap / 2, cy - h / 2, w, h);
+    }
+    ctx.fill();
+    
+    text('RECORDING PLAYBACK', cx, cy + 130, 13, MUTED, 500);
+  }
+  
+  // -------------------------------------------------------------------------
+  // State 5: Timeline (draggable progress)
+  // -------------------------------------------------------------------------
+  else if (stateIdx === 5) {
+    const barW = 500, barH = 8, barY = cy;
+    const barX = cx - barW / 2;
+    
+    // Track
+    roundRect(barX, barY - barH / 2, barW, barH, barH / 2, FG, 0.2);
+    
+    // Drag interaction
+    let progress = prog(u, 0, 1.5);
+    if (mouse.down && mouse.downAt >= state.start && mouse.downAt < state.end) {
+      progress = clamp((mouse.x - barX) / barW);
+    }
+    
+    // Filled portion
+    const fillW = barW * progress;
+    roundRect(barX, barY - barH / 2, fillW, barH, barH / 2, ACCENT);
+    
+    // Handle
+    const handleX = barX + fillW;
+    circle(handleX, barY, 16, FG);
+    circle(handleX, barY, 12, WHITE);
+    
+    // Time markers
+    for (let i = 0; i <= 4; i++) {
+      const x = barX + (barW / 4) * i;
+      line(x, barY + 20, x, barY + 28, MUTED, 1.5, 0.5);
+    }
+    
+    text('CASE TIMELINE', cx, cy - 80, 16, FG, 600);
+    text(`DAY ${Math.floor(progress * 30 + 1)}`, cx, cy + 60, 13, MUTED, 500);
+  }
+  
+  // -------------------------------------------------------------------------
+  // State 6: Evidence Strength Slider
+  // -------------------------------------------------------------------------
+  else if (stateIdx === 6) {
+    const barW = 400, barH = 12, barY = cy;
+    const barX = cx - barW / 2;
+    
+    // Auto-animate to max
+    let value = spring(u / 1.2);
+    
+    // Stretch past max on drag
+    if (mouse.down && mouse.downAt >= state.start) {
+      const dragValue = (mouse.x - barX) / barW;
+      if (dragValue > 1) {
+        value = 1 + (dragValue - 1) * 0.3; // elastic stretch
+      }
+    }
+    
+    // Track
+    roundRect(barX, barY - barH / 2, barW, barH, barH / 2, FG, 0.15);
+    
+    // Fill (with elastic stretch)
+    const fillW = barW * clamp(value, 0, 1.3);
+    const fillColor = value > 1 ? ACCENT : FG;
+    roundRect(barX, barY - barH / 2, fillW, barH, barH / 2, fillColor);
+    
+    text('EVIDENCE STRENGTH', cx, cy - 80, 16, FG, 600);
+    const percent = Math.round(clamp(value, 0, 1) * 100);
+    text(`${percent}% ${value > 1 ? '⚠ MAX' : ''}`, cx, cy + 60, 14, value > 1 ? ACCENT : MUTED, 600);
+  }
+  
+  // -------------------------------------------------------------------------
+  // State 7: Toggle Switch (flips on beat)
+  // -------------------------------------------------------------------------
+  else if (stateIdx === 7) {
+    const beat = Math.floor(u / BEAT);
+    const isOn = beat % 2 === 1;
+    const flipTime = (u % BEAT) / BEAT;
+    
+    const trackW = 160, trackH = 72;
+    const trackX = cx - trackW / 2, trackY = cy - trackH / 2;
+    const trackColor = isOn ? ACCENT : FG;
+    const trackAlpha = lerp(0.2, 1, smoothstep(flipTime));
+    
+    roundRect(trackX, trackY, trackW, trackH, trackH / 2, trackColor, trackAlpha);
+    
+    // Knob with liquid spring (lead/trail edges)
+    const knobR = 28;
+    const knobXOff = isOn ? trackW - knobR - 8 : knobR + 8;
+    const knobXStart = !isOn ? trackW - knobR - 8 : knobR + 8;
+    
+    const lead = springLead(flipTime);
+    const trail = springTrail(flipTime);
+    const knobX = trackX + lerp(knobXStart, knobXOff, (lead + trail) / 2);
+    
+    circle(knobX, cy, knobR, WHITE);
+    
+    text(isOn ? 'SUSPECT' : 'CLEARED', cx, cy + 80, 14, MUTED, 600);
+  }
+  
+  // Update UI state display
+  document.getElementById('state').textContent = state.name.toUpperCase();
+}
+
+// ============================================================================
+// Main Render Loop
+// ============================================================================
+function render(t) {
+  t = t % DURATION; // loop
+  
+  // Clear canvas
+  rect(0, 0, W, H, BG);
+  
+  // Render shape
+  renderShape(t);
+  
+  // Subtle beat grid (debug)
+  // for (let i = 0; i <= 28; i++) {
+  //   const x = 60 + (W - 120) * (i / 28);
+  //   line(x, H - 40, x, H - 50, MUTED, 1, 0.15);
+  // }
+}
+
+// ============================================================================
+// Playback Controls
+// ============================================================================
+let time = 0;
+let playing = false;
+let lastFrame = performance.now();
+
+function tick(now) {
+  if (playing) {
+    const dt = (now - lastFrame) / 1000;
+    time += dt;
+    if (time >= DURATION) time = 0;
+  }
+  lastFrame = now;
+  
+  render(time);
+  
+  // Update time display
+  document.getElementById('time').textContent = 
+    `${time.toFixed(2).padStart(5, '0')} / ${DURATION.toFixed(2)}`;
+  
+  requestAnimationFrame(tick);
+}
+
+document.getElementById('play').onclick = () => {
+  playing = !playing;
+  document.getElementById('play').textContent = playing ? '⏸' : '▶';
+};
+
+window.addEventListener('keydown', e => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    document.getElementById('play').click();
+  }
+});
+
+// Start
+tick(performance.now());
+</script>
+</body>
+</html>

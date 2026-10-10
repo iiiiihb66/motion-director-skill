@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>犯罪学大纲 · 竖屏视觉</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#05070c;
+  --surface:#0f131c;
+  --panel:#161d2b;
+  --ink:#eee7da;
+  --muted:#7e8b90;
+  --line:#29363b;
+  --accent:#c26939;
+  --warn:#ff602e;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font:14px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;
+  overflow:hidden;
+}
+#stage{
+  position:fixed;
+  inset:0;
+  display:grid;
+  place-items:center;
+  background:var(--bg);
+}
+canvas{
+  display:block;
+  width:min(100vw,56.25vh);
+  height:min(177.78vw,100vh);
+  background:#000;
+}
+#controls{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:linear-gradient(to top,rgba(5,7,12,.97),transparent);
+  padding:20px 16px 16px;
+  transform:translateY(0);
+  transition:transform .3s ease;
+}
+body.immersive #controls{transform:translateY(100%)}
+#play{
+  width:100%;
+  padding:12px;
+  background:var(--accent);
+  color:#0a0d12;
+  border:none;
+  border-radius:8px;
+  font:600 15px inherit;
+  cursor:pointer;
+  margin-bottom:10px;
+}
+#scrub{
+  width:100%;
+  height:4px;
+  accent-color:var(--accent);
+  margin-bottom:8px;
+}
+#info{
+  display:flex;
+  justify-content:space-between;
+  font:11px/1.4 monospace;
+  color:var(--muted);
+}
+.hide-ui{
+  position:fixed;
+  top:16px;
+  right:16px;
+  background:rgba(22,29,43,.8);
+  border:1px solid var(--line);
+  color:var(--ink);
+  padding:8px 12px;
+  border-radius:6px;
+  font:12px inherit;
+  cursor:pointer;
+  backdrop-filter:blur(8px);
+}
+body.immersive .hide-ui{opacity:.3}
+.footer{
+  position:fixed;
+  bottom:16px;
+  left:50%;
+  transform:translateX(-50%);
+  font:10px monospace;
+  color:var(--muted);
+  opacity:0;
+  transition:opacity .3s;
+  pointer-events:none;
+}
+body.immersive .footer{opacity:1}
+</style>
+<div id="stage">
+  <canvas id="canvas" width="1080" height="1920"></canvas>
+</div>
+<div id="controls">
+  <button id="play">播放</button>
+  <input id="scrub" type="range" min="0" max="15" step="0.01" value="0">
+  <div id="info">
+    <span id="clock">00.00 / 15.00</span>
+    <span id="status">就绪</span>
+  </div>
+</div>
+<button class="hide-ui" onclick="document.body.classList.toggle('immersive')">H 沉浸</button>
+<p class="footer">犯罪学大纲 · 竖屏 9:16 · 15s · 空格播放 · H 隐藏面板</p>
+
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const c=$('canvas'),ctx=c.getContext('2d',{alpha:false});
+const W=1080,H=1920,DUR=15,TAU=Math.PI*2;
+
+// 安全区定义：距离屏幕边缘的安全距离（避开平台UI）
+const SAFE={
+  top:180,      // 顶部安全区（避开状态栏、平台标题）
+  bottom:280,   // 底部安全区（避开评论、点赞、分享按钮）
+  side:60       // 左右安全区
+};
+
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const lerp=(a,b,p)=>a+(b-a)*p;
+const ease=x=>{x=clamp(x);return x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2};
+const prog=(t,a,b)=>clamp((t-a)/(b-a));
+
+let time=0,playing=false,raf=0,anchor=0;
+let audioCtx,bgMusic,narration,musicGain,narrGain;
+let musicLoaded=false,narrLoaded=false;
+
+// 初始化音频
+function initAudio(){
+  if(audioCtx)return;
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  
+  // 背景音乐
+  fetch('audio/criminology-score.mp3')
+    .then(r=>r.arrayBuffer())
+    .then(buf=>audioCtx.decodeAudioData(buf))
+    .then(decoded=>{
+      bgMusic=decoded;
+      musicLoaded=true;
+      $('status').textContent='音乐已加载';
+    });
+  
+  // 旁白
+  fetch('audio/criminology-narration.mp3')
+    .then(r=>r.arrayBuffer())
+    .then(buf=>audioCtx.decodeAudioData(buf))
+    .then(decoded=>{
+      narration=decoded;
+      narrLoaded=true;
+      $('status').textContent='旁白已加载';
+    });
+}
+
+// 绘制函数
+function circle(x,y,r,color,fill=true,width=2,alpha=1){
+  if(r<=0)return;
+  ctx.globalAlpha=clamp(alpha);
+  ctx.beginPath();
+  ctx.arc(x,y,r,0,TAU);
+  if(fill){
+    ctx.fillStyle=color;
+    ctx.fill();
+  }else{
+    ctx.strokeStyle=color;
+    ctx.lineWidth=width;
+    ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+}
+
+function line(x1,y1,x2,y2,color,width=2,alpha=1){
+  ctx.globalAlpha=clamp(alpha);
+  ctx.strokeStyle=color;
+  ctx.lineWidth=width;
+  ctx.beginPath();
+  ctx.moveTo(x1,y1);
+  ctx.lineTo(x2,y2);
+  ctx.stroke();
+  ctx.globalAlpha=1;
+}
+
+function text(str,x,y,size,color,weight=500,align='left',alpha=1){
+  ctx.globalAlpha=clamp(alpha);
+  ctx.fillStyle=color;
+  ctx.textAlign=align;
+  ctx.textBaseline='middle';
+  ctx.font=`${weight} ${size}px "PingFang SC","Microsoft YaHei",sans-serif`;
+  ctx.fillText(str,x,y);
+  ctx.globalAlpha=1;
+}
+
+function rect(x,y,w,h,color,alpha=1){
+  ctx.globalAlpha=clamp(alpha);
+  ctx.fillStyle=color;
+  ctx.fillRect(x,y,w,h);
+  ctx.globalAlpha=1;
+}
+
+// 主渲染函数
+function render(t){
+  t=clamp(t,0,DUR);
+  
+  // 清屏 - 深色背景
+  rect(0,0,W,H,'#0a0d12');
+  
+  // 氛围层：深色渐变网格（铺满全屏，不受安全区限制）
+  for(let i=0;i<12;i++){
+    const y=i*H/11;
+    line(0,y,W,y,'#1a2230',.8,.15);
+  }
+  for(let i=0;i<7;i++){
+    const x=i*W/6;
+    line(x,0,x,H,'#1a2230',.8,.1);
+  }
+  
+  // 内容安全区边界（调试用，正式版可删除）
+  // rect(SAFE.side,SAFE.top,W-SAFE.side*2,H-SAFE.top-SAFE.bottom,'rgba(198,105,57,.05)');
+  
+  const cx=W/2;
+  const contentTop=SAFE.top+80;
+  const contentBottom=H-SAFE.bottom-80;
+  const contentHeight=contentBottom-contentTop;
+  
+  // === 镜头 1: 标题出现 (0-3s) ===
+  if(t<3){
+    const p=ease(prog(t,0,2.5));
+    text('犯罪学',cx,contentTop+contentHeight*.25,92,'#eee7da',700,'center',p);
+    text('CRIMINOLOGY',cx,contentTop+contentHeight*.25+80,18,'#7e8b90',400,'center',p*.8);
+    
+    // 副标题
+    const sub=ease(prog(t,1,3));
+    text('理解犯罪的本质',cx,contentTop+contentHeight*.42,26,'#c26939',500,'center',sub);
+    
+    // 装饰线
+    const lineP=ease(prog(t,1.5,3));
+    const lineW=300*lineP;
+    line(cx-lineW/2,contentTop+contentHeight*.52,cx+lineW/2,contentTop+contentHeight*.52,'#29363b',2);
+  }
+  
+  // === 镜头 2: 三个核心概念 (3-8s) ===
+  else if(t<8){
+    const concepts=[
+      {label:'犯罪原因',en:'CAUSES',icon:'●'},
+      {label:'犯罪类型',en:'TYPES',icon:'■'},
+      {label:'预防对策',en:'PREVENTION',icon:'▲'}
+    ];
+    
+    concepts.forEach((item,i)=>{
+      const delay=3.2+i*.6;
+      const p=ease(prog(t,delay,delay+1));
+      const y=contentTop+contentHeight*(.25+i*.22);
+      
+      // 图标
+      text(item.icon,SAFE.side+60,y,48,i===1?'#c26939':'#7e8b90',400,'center',p);
+      
+      // 中文标签
+      text(item.label,SAFE.side+140,y-12,32,'#eee7da',600,'left',p);
+      
+      // 英文标签
+      text(item.en,SAFE.side+140,y+18,14,'#7e8b90',400,'left',p*.8);
+      
+      // 连线
+      const lineP=ease(prog(t,delay+.3,delay+1.2));
+      line(SAFE.side+100,y,SAFE.side+100+450*lineP,y,'#29363b',1.5,lineP);
+    });
+  }
+  
+  // === 镜头 3: 关系网络 (8-12s) ===
+  else if(t<12){
+    const nodes=[
+      {x:.3,y:.3,label:'个体'},
+      {x:.7,y:.3,label:'家庭'},
+      {x:.5,y:.5,label:'社会'},
+      {x:.25,y:.7,label:'经济'},
+      {x:.75,y:.7,label:'文化'}
+    ];
+    
+    // 连线出现
+    const linkP=ease(prog(t,8,9.5));
+    [[0,2],[1,2],[2,3],[2,4],[0,1]].forEach(([a,b])=>{
+      const x1=SAFE.side+nodes[a].x*(W-SAFE.side*2);
+      const y1=contentTop+nodes[a].y*contentHeight;
+      const x2=SAFE.side+nodes[b].x*(W-SAFE.side*2);
+      const y2=contentTop+nodes[b].y*contentHeight;
+      line(x1,y1,lerp(x1,x2,linkP),lerp(y1,y2,linkP),'#c26939',2,linkP);
+    });
+    
+    // 节点出现
+    nodes.forEach((node,i)=>{
+      const p=ease(prog(t,8.5+i*.15,9.5+i*.15));
+      const x=SAFE.side+node.x*(W-SAFE.side*2);
+      const y=contentTop+node.y*contentHeight;
+      circle(x,y,35*p,'#161d2b',true);
+      circle(x,y,35*p,'#c26939',false,2,p);
+      text(node.label,x,y,20,'#eee7da',500,'center',p);
+    });
+    
+    // 顶部说明
+    const titleP=ease(prog(t,8,9));
+    text('多因素交互模型',cx,contentTop-40,24,'#eee7da',600,'center',titleP);
+  }
+  
+  // === 镜头 4: 行动呼吁 (12-15s) ===
+  else{
+    const p=ease(prog(t,12,13.5));
+    
+    // 主标题
+    text('预防犯罪',cx,contentTop+contentHeight*.35,68,'#eee7da',700,'center',p);
+    
+    // 副标题
+    const sub=ease(prog(t,12.5,14));
+    text('从理解开始',cx,contentTop+contentHeight*.45,32,'#c26939',500,'center',sub);
+    
+    // 装饰圆环
+    const ring=ease(prog(t,13,15));
+    circle(cx,contentTop+contentHeight*.35-10,180*ring,'#c26939',false,3,ring*.4);
+    circle(cx,contentTop+contentHeight*.35-10,220*ring,'#29363b',false,2,ring*.3);
+  }
+  
+  // 底部时间码（在安全区内）
+  text(`${Math.floor(t)}s`,W-SAFE.side-20,contentBottom+40,14,'#7e8b90',400,'right',.5);
+}
+
+// 播放控制
+function draw(){
+  render(time);
+  $('scrub').value=time;
+  $('clock').textContent=`${time.toFixed(2).padStart(5,'0')} / 15.00`;
+}
+
+function tick(now){
+  if(!playing)return;
+  time=(now-anchor)/1000;
+  if(time>=DUR){
+    time=DUR;
+    playing=false;
+    $('play').textContent='重播';
+    draw();
+    raf=0;
+    return;
+  }
+  draw();
+  raf=requestAnimationFrame(tick);
+}
+
+function pause(){
+  if(playing)time=clamp((performance.now()-anchor)/1000,0,DUR);
+  playing=false;
+  cancelAnimationFrame(raf);
+  raf=0;
+  $('play').textContent='播放';
+  draw();
+}
+
+function toggle(){
+  if(!audioCtx)initAudio();
+  
+  if(playing){
+    pause();
+    return;
+  }
+  
+  if(time>=DUR)time=0;
+  playing=true;
+  anchor=performance.now()-time*1000;
+  $('play').textContent='暂停';
+  $('status').textContent='播放中';
+  raf=requestAnimationFrame(tick);
+}
+
+function seek(t){
+  time=clamp(t,0,DUR);
+  anchor=performance.now()-time*1000;
+  draw();
+}
+
+// 事件绑定
+$('play').onclick=toggle;
+$('scrub').oninput=e=>seek(Number(e.target.value));
+
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT')return;
+  if(e.code==='Space'){
+    e.preventDefault();
+    toggle();
+  }else if(e.key.toLowerCase()==='h'){
+    document.body.classList.toggle('immersive');
+  }
+});
+
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden&&playing)pause();
+});
+
+// 初始化
+draw();
+$('status').textContent='点击播放开始';
+</script>
+</html>

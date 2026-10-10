@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>犯罪学 · Criminology</title>
+<style>
+:root{
+  --bg:#05070c;
+  --surface:#0a0d12;
+  --ink:#eee7da;
+  --muted:#7e8b90;
+  --line:#1a2230;
+  --accent:#ff602e;
+  --warm:#c26939;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font:14px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;
+  overflow:hidden;
+  cursor:none;
+}
+#stage{
+  position:fixed;
+  inset:0;
+  display:grid;
+  place-items:center;
+}
+canvas{
+  display:block;
+  width:min(100vw,56.25vh);
+  height:min(177.78vw,100vh);
+  background:#000;
+}
+#controls{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:linear-gradient(to top,rgba(5,7,12,.95),transparent);
+  padding:16px;
+  transform:translateY(0);
+  transition:transform .3s;
+  z-index:100;
+}
+body.immersive #controls{transform:translateY(100%)}
+.btn-group{display:flex;gap:8px;margin-bottom:10px}
+button,select{
+  flex:1;
+  padding:10px;
+  background:var(--surface);
+  color:var(--ink);
+  border:1px solid var(--line);
+  border-radius:6px;
+  font:inherit;
+  cursor:pointer;
+  transition:all .2s;
+}
+button:hover{border-color:var(--accent);background:#0f131c}
+button.active{background:var(--accent);color:#000;border-color:var(--accent)}
+#play{background:var(--accent);color:#000;font-weight:600}
+#scrub{
+  width:100%;
+  height:3px;
+  accent-color:var(--accent);
+  margin:8px 0;
+}
+#info{
+  display:flex;
+  justify-content:space-between;
+  font:10px monospace;
+  color:var(--muted);
+  letter-spacing:.5px;
+}
+.hint{
+  position:fixed;
+  top:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(10,13,18,.9);
+  border:1px solid var(--line);
+  padding:12px 20px;
+  border-radius:8px;
+  font:12px monospace;
+  color:var(--muted);
+  backdrop-filter:blur(10px);
+  opacity:0;
+  transition:opacity .3s;
+  pointer-events:none;
+  z-index:50;
+}
+body.immersive .hint{opacity:1}
+</style>
+<div id="stage">
+  <canvas id="canvas" width="1080" height="1920"></canvas>
+</div>
+<div id="controls">
+  <div class="btn-group">
+    <button id="play">▶ 播放</button>
+    <button id="restart">⟲ 重播</button>
+    <button id="hide">👁 沉浸</button>
+  </div>
+  <input id="scrub" type="range" min="0" max="15" step="0.01" value="0">
+  <div id="info">
+    <span id="clock">00.00 / 15.00</span>
+    <span id="fps">60 FPS</span>
+    <span id="status">READY</span>
+  </div>
+</div>
+<div class="hint">SPACE 播放 · H 沉浸 · ESC 退出</div>
+
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const c=$('canvas'),ctx=c.getContext('2d',{alpha:false,desynchronized:true});
+const W=1080,H=1920,DUR=15,TAU=Math.PI*2;
+
+const SAFE={top:180,bottom:280,side:60};
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const lerp=(a,b,p)=>a+(b-a)*p;
+const ease=x=>{x=clamp(x);return x<.5?4*x*x*x:(x-1)*(2*x-2)*(2*x-2)+1};
+const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
+const prog=(t,a,b)=>clamp((t-a)/(b-a));
+const elastic=x=>{if(x<=0)return 0;if(x>=1)return 1;return Math.pow(2,-10*x)*Math.sin((x-.075)*TAU/0.3)+1};
+
+let time=0,playing=false,raf=0,anchor=0,lastFrame=0,fpsCount=0,lastFps=60;
+let audioCtx,musicSource,narrSource,musicBuf,narrBuf,musicStartedAt=0,narrStartedAt=0;
+let particles=[],lines=[],glitchSeed=0;
+
+// 音频初始化
+async function initAudio(){
+  if(audioCtx)return;
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  
+  try{
+    const [music,narr]=await Promise.all([
+      fetch('audio/criminology-score.mp3').then(r=>r.arrayBuffer()).then(b=>audioCtx.decodeAudioData(b)),
+      fetch('audio/criminology-narration.mp3').then(r=>r.arrayBuffer()).then(b=>audioCtx.decodeAudioData(b))
+    ]);
+    musicBuf=music;
+    narrBuf=narr;
+    $('status').textContent='AUDIO READY';
+  }catch(e){
+    console.warn('音频加载失败',e);
+    $('status').textContent='NO AUDIO';
+  }
+}
+
+function playAudio(){
+  if(!audioCtx||!musicBuf||!narrBuf)return;
+  
+  stopAudio();
+  
+  const now=audioCtx.currentTime;
+  
+  // 背景音乐
+  musicSource=audioCtx.createBufferSource();
+  musicSource.buffer=musicBuf;
+  const musicGain=audioCtx.createGain();
+  musicGain.gain.value=0.35;
+  musicSource.connect(musicGain).connect(audioCtx.destination);
+  musicSource.start(now,time);
+  musicStartedAt=now-time;
+  
+  // 旁白
+  narrSource=audioCtx.createBufferSource();
+  narrSource.buffer=narrBuf;
+  const narrGain=audioCtx.createGain();
+  narrGain.gain.value=0.9;
+  narrSource.connect(narrGain).connect(audioCtx.destination);
+  narrSource.start(now,time);
+  narrStartedAt=now-time;
+}
+
+function stopAudio(){
+  if(musicSource){
+    try{musicSource.stop()}catch(e){}
+    musicSource=null;
+  }
+  if(narrSource){
+    try{narrSource.stop()}catch(e){}
+    narrSource=null;
+  }
+}
+
+// 粒子系统
+class Particle{
+  constructor(x,y,vx,vy,life,color,size=2){
+    this.x=x;this.y=y;this.vx=vx;this.vy=vy;
+    this.life=life;this.maxLife=life;this.color=color;this.size=size;
+  }
+  update(dt){
+    this.x+=this.vx*dt*60;
+    this.y+=this.vy*dt*60;
+    this.vy+=0.3*dt*60;
+    this.life-=dt;
+    return this.life>0;
+  }
+  draw(){
+    const a=clamp(this.life/this.maxLife);
+    ctx.globalAlpha=a;
+    ctx.fillStyle=this.color;
+    ctx.fillRect(this.x-this.size/2,this.y-this.size/2,this.size,this.size);
+    ctx.globalAlpha=1;
+  }
+}
+
+function spawnParticles(x,y,count,color){
+  for(let i=0;i<count;i++){
+    const angle=Math.random()*TAU;
+    const speed=2+Math.random()*4;
+    particles.push(new Particle(
+      x,y,
+      Math.cos(angle)*speed,
+      Math.sin(angle)*speed-3,
+      0.5+Math.random()*0.8,
+      color,
+      2+Math.random()*2
+    ));
+  }
+}
+
+// 绘制工具
+function circle(x,y,r,color,fill=true,width=2,alpha=1){
+  if(r<=0)return;
+  ctx.globalAlpha=clamp(alpha);
+  ctx.beginPath();
+  ctx.arc(x,y,r,0,TAU);
+  if(fill){ctx.fillStyle=color;ctx.fill()}
+  else{ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke()}
+  ctx.globalAlpha=1;
+}
+
+function line(x1,y1,x2,y2,color,width=2,alpha=1){
+  ctx.globalAlpha=clamp(alpha);
+  ctx.strokeStyle=color;
+  ctx.lineWidth=width;
+  ctx.beginPath();
+  ctx.moveTo(x1,y1);
+  ctx.lineTo(x2,y2);
+  ctx.stroke();
+  ctx.globalAlpha=1;
+}
+
+function text(str,x,y,size,color,weight=500,align='left',alpha=1,spacing=0){
+  ctx.globalAlpha=clamp(alpha);
+  ctx.fillStyle=color;
+  ctx.textAlign=align;
+  ctx.textBaseline='middle';
+  ctx.font=`${weight} ${size}px "PingFang SC","Microsoft YaHei",sans-serif`;
+  if(spacing!==0){
+    ctx.letterSpacing=`${spacing}px`;
+  }
+  ctx.fillText(str,x,y);
+  ctx.letterSpacing='0px';
+  ctx.globalAlpha=1;
+}
+
+function rect(x,y,w,h,color,alpha=1){
+  ctx.globalAlpha=clamp(alpha);
+  ctx.fillStyle=color;
+  ctx.fillRect(x,y,w,h);
+  ctx.globalAlpha=1;
+}
+
+function drawGlow(x,y,r,color,intensity=0.3){
+  const gradient=ctx.createRadialGradient(x,y,0,x,y,r);
+  gradient.addColorStop(0,color.replace(')',`,${intensity})`).replace('rgb','rgba'));
+  gradient.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=gradient;
+  ctx.fillRect(x-r,y-r,r*2,r*2);
+}
+
+// 故障效果
+function glitch(t,intensity=1){
+  if(Math.random()>0.95*intensity){
+    const offset=Math.floor(Math.random()*20-10)*intensity;
+    const h=Math.floor(Math.random()*100);
+    const y=Math.floor(Math.random()*(H-h));
+    ctx.drawImage(c,0,y,W,h,offset,y,W,h);
+  }
+}
+
+// 主渲染
+function render(t,dt){
+  t=clamp(t,0,DUR);
+  const beat=t*2;
+  const cx=W/2;
+  
+  // 清屏
+  rect(0,0,W,H,'#000');
+  
+  // 扫描线背景
+  for(let i=0;i<H;i+=3){
+    rect(0,i,W,1,'#0a0d12',.2);
+  }
+  
+  // 动态网格
+  const gridOffset=t*20%40;
+  for(let i=0;i<30;i++){
+    const y=i*H/30-gridOffset;
+    line(0,y,W,y,'#1a2230',0.5,.1+Math.sin(t*2+i*0.3)*0.05);
+  }
+  for(let i=0;i<15;i++){
+    const x=i*W/15;
+    line(x,0,x,H,'#1a2230',0.5,.08);
+  }
+  
+  const contentTop=SAFE.top;
+  const contentBottom=H-SAFE.bottom;
+  const contentMid=(contentTop+contentBottom)/2;
+  
+  // === 镜头 1: 爆发式标题 (0-3s) ===
+  if(t<3){
+    const p=elastic(prog(t,0.1,2));
+    const shake=(Math.sin(t*50)+Math.cos(t*73))*3*(1-prog(t,0,1));
+    
+    // 主标题
+    text('犯罪学',cx+shake,contentMid-100,120,'#eee7da',800,'center',p,2);
+    
+    // 副标题拆字动画
+    const sub='CRIMINOLOGY';
+    for(let i=0;i<sub.length;i++){
+      const delay=1+i*0.06;
+      const cp=ease(prog(t,delay,delay+0.4));
+      const offset=(1-cp)*60;
+      text(sub[i],SAFE.side+80+i*78,contentMid+120-offset,32,'#ff602e',600,'left',cp);
+    }
+    
+    // 爆发粒子
+    if(t>0.5&&t<1.5&&Math.random()>0.7){
+      spawnParticles(cx,contentMid-100,3,'#ff602e');
+    }
+    
+    // 辉光
+    drawGlow(cx,contentMid-100,300*p,'rgb(255,96,46)',0.2*p);
+  }
+  
+  // === 镜头 2: 数据流与关键词 (3-7s) ===
+  else if(t<7){
+    const keywords=[
+      {text:'犯罪原因',en:'CAUSES',x:.15,delay:3.2},
+      {text:'犯罪类型',en:'TYPES',x:.5,delay:3.8},
+      {text:'预防对策',en:'PREVENTION',x:.85,delay:4.4}
+    ];
+    
+    // 数据流背景
+    for(let i=0;i<50;i++){
+      const flowT=(t*3+i*0.3)%4;
+      const flowP=flowT/4;
+      const x=i*W/50;
+      const y=flowP*H;
+      const alpha=Math.sin(flowP*Math.PI)*0.3;
+      line(x,y,x,y+60,'#1a2230',1,alpha);
+    }
+    
+    keywords.forEach((kw,i)=>{
+      const p=elastic(prog(t,kw.delay,kw.delay+0.8));
+      const x=cx+(kw.x-0.5)*700;
+      const y=contentTop+200+i*280;
+      
+      // 边框
+      const boxW=280*p,boxH=160*p;
+      ctx.strokeStyle='#ff602e';
+      ctx.lineWidth=3;
+      ctx.strokeRect(x-boxW/2,y-boxH/2,boxW,boxH);
+      
+      // 内容
+      text(kw.text,x,y-20,36,'#eee7da',700,'center',p);
+      text(kw.en,x,y+25,16,'#7e8b90',400,'center',p*.8,1);
+      
+      // 连线到中心
+      const linkP=ease(prog(t,kw.delay+0.5,kw.delay+1.2));
+      line(x,y+boxH/2,lerp(x,cx,linkP),lerp(y+boxH/2,contentMid,linkP),'#ff602e',2,linkP);
+      
+      // 发射粒子
+      if(t>kw.delay+0.3&&t<kw.delay+1&&Math.random()>0.85){
+        spawnParticles(x,y,2,'#ff602e');
+      }
+    });
+    
+    // 中心汇聚点
+    const centerP=ease(prog(t,5,6));
+    circle(cx,contentMid,40*centerP,'#000');
+    circle(cx,contentMid,38*centerP,'#ff602e',false,4,centerP);
+    drawGlow(cx,contentMid,150*centerP,'rgb(255,96,46)',0.3*centerP);
+  }
+  
+  // === 镜头 3: 网络爆炸 (7-11s) ===
+  else if(t<11){
+    const nodes=[
+      {x:.5,y:.25,r:50,label:'个体',color:'#ff602e'},
+      {x:.25,y:.45,r:40,label:'家庭',color:'#c26939'},
+      {x:.75,y:.45,r:40,label:'经济',color:'#c26939'},
+      {x:.35,y:.7,r:35,label:'社会',color:'#7e8b90'},
+      {x:.65,y:.7,r:35,label:'文化',color:'#7e8b90'}
+    ];
+    
+    // 连线动画
+    const linkP=ease(prog(t,7,8.5));
+    const pulse=Math.sin(t*4)*0.3+0.7;
+    [[0,1],[0,2],[1,3],[2,4],[3,4]].forEach(([a,b])=>{
+      const x1=SAFE.side+nodes[a].x*(W-SAFE.side*2);
+      const y1=contentTop+nodes[a].y*(contentBottom-contentTop);
+      const x2=SAFE.side+nodes[b].x*(W-SAFE.side*2);
+      const y2=contentTop+nodes[b].y*(contentBottom-contentTop);
+      line(x1,y1,lerp(x1,x2,linkP),lerp(y1,y2,linkP),nodes[a].color,3*pulse,linkP*0.6);
+    });
+    
+    // 节点
+    nodes.forEach((node,i)=>{
+      const np=elastic(prog(t,7.5+i*0.15,8.5+i*0.15));
+      const x=SAFE.side+node.x*(W-SAFE.side*2);
+      const y=contentTop+node.y*(contentBottom-contentTop);
+      const r=node.r*np;
+      
+      circle(x,y,r+10,'#000');
+      circle(x,y,r,node.color);
+      circle(x,y,r,node.color,false,3);
+      text(node.label,x,y,22,'#000',700,'center',np);
+      
+      drawGlow(x,y,r*2,`rgb(${node.color==='#ff602e'?'255,96,46':'198,105,57'})`,0.2*np);
+      
+      // 脉冲波
+      if(t>8&&Math.sin(t*6+i)>0.9){
+        const wave=((t*6+i)%1);
+        circle(x,y,r+wave*80,node.color,false,2,1-wave);
+      }
+    });
+    
+    // 标题
+    const titleP=ease(prog(t,7,8));
+    text('多因素交互',cx,contentTop+50,32,'#eee7da',600,'center',titleP);
+  }
+  
+  // === 镜头 4: 行动呼吁爆破 (11-15s) ===
+  else{
+    const finalP=elastic(prog(t,11,12.5));
+    const pulseSize=Math.sin((t-11)*3)*20;
+    
+    // 背景爆发
+    for(let i=0;i<12;i++){
+      const angle=i/12*TAU+(t-11)*0.5;
+      const dist=400*ease(prog(t,11,13));
+      const x=cx+Math.cos(angle)*dist;
+      const y=contentMid+Math.sin(angle)*dist;
+      line(cx,contentMid,x,y,'#ff602e',2,.1);
+    }
+    
+    // 主标题
+    text('预防犯罪',cx,contentMid-80+pulseSize,88,'#eee7da',800,'center',finalP);
+    
+    // 副标题
+    const subP=ease(prog(t,12,13.5));
+    text('从理解开始',cx,contentMid+60,42,'#ff602e',600,'center',subP);
+    
+    // 圆环爆炸
+    const rings=[
+      {r:200,delay:11.5,width:4},
+      {r:320,delay:11.8,width:3},
+      {r:450,delay:12.1,width:2}
+    ];
+    rings.forEach(ring=>{
+      const rp=ease(prog(t,ring.delay,ring.delay+2));
+      circle(cx,contentMid,ring.r*rp,'#ff602e',false,ring.width,rp*(1-prog(t,ring.delay+1,ring.delay+2)));
+    });
+    
+    // 辉光最强
+    drawGlow(cx,contentMid,500*finalP,'rgb(255,96,46)',0.4*finalP);
+    
+    // 结尾粒子雨
+    if(t>13&&Math.random()>0.6){
+      spawnParticles(Math.random()*W,contentTop,1,'#ff602e');
+    }
+  }
+  
+  // 粒子系统更新
+  particles=particles.filter(p=>{
+    const alive=p.update(dt);
+    if(alive)p.draw();
+    return alive;
+  });
+  
+  // 故障效果（在关键时刻）
+  if((t>0.5&&t<1)||(t>3&&t<3.5)||(t>7&&t<7.5)){
+    glitch(t,0.5);
+  }
+  
+  // 颗粒噪声
+  if(Math.random()>0.95){
+    const imageData=ctx.getImageData(0,0,W,H);
+    const data=imageData.data;
+    for(let i=0;i<data.length;i+=400){
+      data[i]=data[i+1]=data[i+2]=Math.random()*50;
+    }
+    ctx.putImageData(imageData,0,0);
+  }
+  
+  // 时间码
+  text(`${Math.floor(t*100)/100}s`.padStart(6,'0'),W-SAFE.side-10,contentBottom+60,13,'#7e8b90',400,'right',.4);
+}
+
+// 播放控制
+function draw(){
+  const now=performance.now()/1000;
+  const dt=Math.min(now-lastFrame,0.1);
+  lastFrame=now;
+  
+  render(time,dt);
+  
+  $('scrub').value=time;
+  $('clock').textContent=`${time.toFixed(2).padStart(5,'0')} / 15.00`;
+  
+  fpsCount++;
+  if(now%1<dt){
+    lastFps=fpsCount;
+    fpsCount=0;
+  }
+  $('fps').textContent=`${lastFps} FPS`;
+}
+
+function tick(now){
+  if(!playing)return;
+  time=(now-anchor)/1000;
+  
+  if(time>=DUR){
+    time=DUR;
+    playing=false;
+    $('play').textContent='▶ 播放';
+    $('play').classList.remove('active');
+    $('status').textContent='FINISHED';
+    stopAudio();
+    draw();
+    raf=0;
+    return;
+  }
+  
+  draw();
+  raf=requestAnimationFrame(tick);
+}
+
+function pause(){
+  if(playing){
+    time=clamp((performance.now()-anchor)/1000,0,DUR);
+  }
+  playing=false;
+  cancelAnimationFrame(raf);
+  raf=0;
+  stopAudio();
+  $('play').textContent='▶ 播放';
+  $('play').classList.remove('active');
+  $('status').textContent='PAUSED';
+  draw();
+}
+
+async function toggle(){
+  if(!audioCtx)await initAudio();
+  
+  if(playing){
+    pause();
+    return;
+  }
+  
+  if(time>=DUR)time=0;
+  
+  playing=true;
+  anchor=performance.now()-time*1000;
+  lastFrame=performance.now()/1000;
+  $('play').textContent='⏸ 暂停';
+  $('play').classList.add('active');
+  $('status').textContent='PLAYING';
+  
+  playAudio();
+  raf=requestAnimationFrame(tick);
+}
+
+function seek(t){
+  time=clamp(t,0,DUR);
+  anchor=performance.now()-time*1000;
+  
+  if(playing){
+    stopAudio();
+    playAudio();
+  }
+  
+  draw();
+}
+
+function restart(){
+  pause();
+  time=0;
+  particles=[];
+  draw();
+}
+
+// 事件
+$('play').onclick=toggle;
+$('restart').onclick=restart;
+$('hide').onclick=()=>document.body.classList.toggle('immersive');
+$('scrub').oninput=e=>{
+  if(playing)pause();
+  seek(Number(e.target.value));
+};
+
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT')return;
+  if(e.code==='Space'){
+    e.preventDefault();
+    toggle();
+  }else if(e.key.toLowerCase()==='h'){
+    document.body.classList.toggle('immersive');
+  }else if(e.code==='Escape'){
+    if(playing)pause();
+    document.body.classList.remove('immersive');
+  }
+});
+
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden&&playing)pause();
+});
+
+// 初始化
+draw();
+$('status').textContent='READY · CLICK TO START';
+</script>
+</html>

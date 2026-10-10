@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MOTION DIRECTOR // 项目总看板 MASTER DASHBOARD</title>
+<style>
+  :root {
+    --bg: #07090e;
+    --panel-bg: #0d121c;
+    --card-bg: #131a26;
+    --card-hover-bg: #182130;
+    --border: #1e2838;
+    --border-hover: #334460;
+    --accent-blue: #00d8f6;
+    --accent-green: #00e575;
+    --accent-gold: #ffbe2e;
+    --accent-purple: #c084fc;
+    --accent-red: #ff5252;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background-color: var(--bg);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    min-height: 100vh;
+    padding: 32px 40px 60px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Header */
+  header {
+    max-width: 1680px;
+    margin: 0 auto 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .brand-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .brand-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .brand-title h1 {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: #fff;
+  }
+  .badge-dash {
+    background: rgba(0, 216, 246, 0.12);
+    color: var(--accent-blue);
+    border: 1px solid rgba(0, 216, 246, 0.35);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 6px;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  .brand-desc {
+    color: var(--text-secondary);
+    font-size: 13px;
+    letter-spacing: 0.2px;
+  }
+
+  .stats-bar {
+    display: flex;
+    gap: 14px;
+    flex-wrap: nowrap;
+  }
+  .stat-card {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    padding: 8px 18px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    min-width: 100px;
+  }
+  .stat-card .val {
+    font-size: 19px;
+    font-weight: 800;
+    color: #fff;
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    white-space: nowrap;
+  }
+  .stat-card .val.live { color: var(--accent-green); }
+  .stat-card .lbl {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-top: 1px;
+    white-space: nowrap;
+  }
+
+  /* Grid Layout: 2 Columns on desktop */
+  main {
+    max-width: 1680px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px;
+  }
+  @media (max-width: 1180px) {
+    main { grid-template-columns: 1fr; }
+  }
+
+  /* Category Panels */
+  .category-panel {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .category-panel:hover {
+    border-color: var(--border-hover);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  }
+  .panel-header {
+    padding: 18px 24px;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+  .panel-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  .panel-icon {
+    font-size: 20px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .panel-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .panel-pill {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--accent-blue);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .panel-desc {
+    padding: 14px 24px 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .works-container {
+    padding: 12px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 1;
+  }
+
+  /* Work Item Card */
+  .work-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  }
+  .work-card:hover {
+    background: var(--card-hover-bg);
+    border-color: rgba(0, 216, 246, 0.35);
+    transform: translateY(-1px);
+  }
+
+  /* Thumbnail Area */
+  .work-thumb-wrapper {
+    position: relative;
+    width: 140px;
+    min-width: 140px;
+    height: 82px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #000;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .work-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.25s ease;
+  }
+  .work-thumb-wrapper:hover .work-thumb {
+    transform: scale(1.08);
+  }
+  .thumb-play-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    font-size: 18px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .work-thumb-wrapper:hover .thumb-play-overlay {
+    opacity: 1;
+  }
+
+  .work-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .work-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .work-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tag-group {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 5px;
+    white-space: nowrap;
+    display: inline-block;
+  }
+  .tag-locked { background: rgba(255, 82, 82, 0.18); color: #ff6b6b; border: 1px solid rgba(255, 82, 82, 0.4); }
+  .tag-hero { background: rgba(0, 229, 117, 0.15); color: var(--accent-green); border: 1px solid rgba(0, 229, 117, 0.35); }
+  .tag-spec { background: rgba(0, 216, 246, 0.15); color: var(--accent-blue); border: 1px solid rgba(0, 216, 246, 0.35); }
+  .tag-gold { background: rgba(255, 190, 46, 0.15); color: var(--accent-gold); border: 1px solid rgba(255, 190, 46, 0.35); }
+  .tag-purple { background: rgba(192, 132, 252, 0.15); color: var(--accent-purple); border: 1px solid rgba(192, 132, 252, 0.35); }
+
+  .work-meta {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .work-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    margin-top: 2px;
+  }
+  .btn {
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .btn-preview {
+    background: var(--accent-blue);
+    color: #040810;
+  }
+  .btn-preview:hover {
+    filter: brightness(1.15);
+    box-shadow: 0 0 12px rgba(0, 216, 246, 0.4);
+  }
+  .btn-open {
+    background: #1c2738;
+    color: #e2e8f0;
+    border: 1px solid var(--border);
+  }
+  .btn-open:hover {
+    background: #27374d;
+    color: #fff;
+  }
+
+  /* Modal Preview */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(3, 5, 8, 0.88);
+    backdrop-filter: blur(10px);
+    z-index: 9999;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-content {
+    background: #0b0f17;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    width: min(96vw, 1300px);
+    height: min(92vh, 900px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.9);
+  }
+  .modal-header {
+    padding: 14px 20px;
+    background: #121824;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-title { font-size: 15px; font-weight: 700; color: #fff; }
+  .modal-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 22px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 2px 6px;
+  }
+  .modal-close:hover { color: #fff; }
+  iframe#preview-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #000;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand-group">
+    <div class="brand-title">
+      <h1>MOTION DIRECTOR</h1>
+      <span class="badge-dash">MASTER DASHBOARD</span>
+    </div>
+    <div class="brand-desc">全项目 4 大独立方向旗舰成品总看板 · 真实画面对应 · 60FPS 实时音画同步</div>
+  </div>
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="val" id="cat-count">4</div>
+      <div class="lbl">独立方向</div>
+    </div>
+    <div class="stat-card">
+      <div class="val" id="work-count">7</div>
+      <div class="lbl">旗舰成品</div>
+    </div>
+    <div class="stat-card">
+      <div class="val live">ONLINE</div>
+      <div class="lbl">端口 5173</div>
+    </div>
+</header>
+
+<div style="max-width:1680px;margin:0 auto 24px;padding:16px 24px;background:linear-gradient(90deg, rgba(0,216,246,0.18), rgba(255,209,92,0.18));border:1.5px solid #00d8f6;border-radius:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;box-shadow:0 8px 24px rgba(0,0,0,0.5);">
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <span style="background:#00d8f6;color:#05080f;font-weight:800;padding:4px 10px;border-radius:6px;font-size:12px;letter-spacing:0.5px;">🔥 缩略图同款全新定制</span>
+    <strong style="font-size:18px;color:#fff;font-family:'Songti SC','PingFang SC',serif;">《光的历程 · 极简矢量蓝图版 (Vector Duality Edition)》</strong>
+    <span style="color:#94a3b8;font-size:13px;">三棱镜白光入射与七彩色散 · 同心干涉波阵面与金光量子 · 底部高清晰同步字幕</span>
+  </div>
+  <a href="/odyssey-vector-duality.html" style="background:#00d8f6;color:#05080f;padding:10px 22px;border-radius:8px;text-decoration:none;font-weight:800;font-size:14px;box-shadow:0 4px 14px rgba(0,216,246,0.35);">▶ 立即观看《矢量蓝图版》(直达)</a>
+</div>
+
+<main id="dashboard-grid">
+  <!-- Dynamic Rendered via CATEGORY_REGISTRY -->
+</main>
+
+<!-- Modal Preview Frame -->
+<div class="modal-overlay" id="preview-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title-text">作品预览</div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <a id="modal-external-link" href="#" target="_blank" class="btn btn-open">↗ 新窗口打开</a>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+    </div>
+    <iframe id="preview-frame" src="about:blank" allow="autoplay; fullscreen; encrypted-media"></iframe>
+  </div>
+</div>
+
+<script>
+// 极致精简：仅保留各方向最具价值的正式成品（去除非必要的过渡草稿）
+const CATEGORY_REGISTRY = [
+  {
+    id: "criminology",
+    name: "01. 犯罪学科普 (Criminology)",
+    icon: "⚖️",
+    description: "法理与刑侦科普动态大作。包含三合一交互合集版、官方配音定稿版与社媒短视频。",
+    works: [
+      {
+        title: "三风格实时切换版 (交互合集旗舰)",
+        path: "/assets/criminology-styles.html?rev=three-styles-1",
+        thumb: "/assets/thumbnails/crim_styles.jpg",
+        meta: "空间取证 / 黑白档案 / 蓝图取证 三大视觉语言在同一时间轴上一键切换",
+        tags: [{ text: "三合一合集", type: "hero" }, { text: "风格切换", type: "spec" }]
+      },
+      {
+        title: "34s 经典横屏版 (微软官方配音)",
+        path: "/assets/criminology-preview.html?rev=079-v4-microsoft",
+        thumb: "/assets/thumbnails/crim_preview.jpg",
+        meta: "34s · 微软云健声线 · 刑侦物证与侧写分析 · 音画完全同步",
+        tags: [{ text: "已锁定", type: "locked" }, { text: "官方原版", type: "spec" }]
+      },
+      {
+        title: "15s 社媒短视频竖屏版",
+        path: "/criminology-15s.html",
+        thumb: "/assets/thumbnails/crim_15s.jpg",
+        meta: "15s · 9:16 竖屏 · 抖音/视频号安全区排版 · 双时钟保底驱动",
+        tags: [{ text: "社媒宣发", type: "purple" }]
+      }
+    ]
+  },
+  {
+    id: "abgone",
+    name: "02. ABG ONE 金融量化 (abgone)",
+    icon: "📈",
+    description: "getabg.one 品牌产品动态视觉。涵盖竖屏瑞士数据流与 16:9 3D 影院级预告片。",
+    works: [
+      {
+        title: "24s 竖屏宣传片 (瑞士极简数据风)",
+        path: "/assets/getabg-promo.html",
+        thumb: "/assets/thumbnails/abg_promo.jpg",
+        meta: "24s · 9:16 竖屏 · Web Audio 算法实时合成音轨 · 4 幕逻辑卡点",
+        tags: [{ text: "主力宣传片", type: "hero" }, { text: "内置音轨", type: "spec" }]
+      },
+      {
+        title: "30s 概念预告片 (3D 影院剪辑)",
+        path: "/abg_one_opus55_trailer.html",
+        thumb: "/assets/thumbnails/abg_opus55.jpg",
+        meta: "30s · 16:9 横屏 · 7 幕 3D 镜头 · Three.js 决策曲面与订单流",
+        tags: [{ text: "3D 大屏", type: "gold" }]
+      }
+    ]
+  },
+  {
+    id: "portfolio",
+    name: "03. 设计师个人作品集 (Portfolio)",
+    icon: "🎨",
+    description: "顶尖动态设计师 Showreel。纯数学函数驱动 60FPS 实时渲染，前卫工业排版美学。",
+    works: [
+      {
+        title: "15s 大师级 Master Showreel (全合一)",
+        path: "/portfolio_15s_showreel.html",
+        thumb: "/assets/thumbnails/port_showreel.jpg",
+        meta: "15s · 9:16 竖屏 · 界面内一键实时切换【瑞士黑橙 / 酸性荧光 / 获奖全息】三大滤镜",
+        tags: [{ text: "三合一合集", type: "hero" }, { text: "多滤镜", type: "spec" }]
+      }
+    ]
+  },
+  {
+    id: "odyssey",
+    name: "04. 光的历程 (The Odyssey of Light)",
+    icon: "✨",
+    description: "物理科普史诗动态大片。探寻光的波粒二象性，纯净双轨交响乐与 3D WebGL 渲染。",
+    works: [
+      {
+        title: "30s 极简硬核矢量蓝图版 (Vector Duality)",
+        path: "/odyssey-vector-duality.html",
+        thumb: "/assets/thumbnails/light_odyssey.jpg",
+        meta: "🔥 用户点赞缩略图同款风格 · 60FPS 极简硬核几何示意图 · 三棱镜白光入射与七彩色散 · 同心干涉波阵面与量子光子",
+        tags: [{ text: "缩略图同款风格", type: "hero" }, { text: "硬核几何美学", type: "gold" }, { text: "全程同步字幕", type: "spec" }]
+      },
+      {
+        title: "30s Hero 动态视觉大片 (WebGL 原版)",
+        path: "/odyssey-30s.html",
+        thumb: "/assets/thumbnails/light_odyssey.jpg",
+        meta: "30s · 5 幕紧凑史诗叙事 · 三棱镜色散与双缝量子干涉 · WebGL 渲染",
+        tags: [{ text: "3D WebGL", type: "purple" }, { text: "双轨音频", type: "spec" }]
+      }
+    ]
+  },
+  {
+    id: "quantum",
+    name: "05. 量子引力与度规 (Quantum Metric)",
+    icon: "🌌",
+    description: "Gemini 4 / pdoom-video 全新主题实战。真空涨落、度规曲率张量与事件视界，纯代码单文件 HTML 独立运行。",
+    works: [
+      {
+        title: "20s 量子度规动态视觉大片 (Quantum Metric Reel)",
+        path: "/quantum_odyssey_showreel.html",
+        thumb: "/assets/thumbnails/crim_styles.jpg",
+        meta: "20s · 6 幕确定性学术图版 · 内置程序化合成声效 · 双层 Three.js + Canvas2D · 9:16 / 16:9 实时切换",
+        tags: [{ text: "Gemini 4 范式", type: "hero" }, { text: "纯单文件HTML", type: "gold" }, { text: "内置声学合成", type: "spec" }]
+      }
+    ]
+  },
+  {
+    id: "new_visuals_2026",
+    name: "06. 动态视觉与印刷美学新作 (New Works 2026)",
+    icon: "🎨",
+    description: "融合 mono-color 技能双色孔版印刷与 motion-director 代码动效引擎的最新作品。",
+    works: [
+      {
+        title: "春分 · SPRING EQUINOX (10s 9:16 Mono-Color 视听大片)",
+        path: "/chunfen_mono_color.html",
+        thumb: "/hero-skill-logos/skill-logo-01.webp",
+        meta: "10s · 9:16 竖屏 · 墨绿/陶土橙 Risograph 双色印刷美学 · Halftone 半色调网点波幅与 Web Audio 磬音",
+        tags: [{ text: "春分节气", type: "hero" }, { text: "Mono-Color美学", type: "gold" }, { text: "9:16 视听大片", type: "spec" }]
+      },
+      {
+        title: "MOTION ARCHITECT 2026 (15s 履历展示卷轴)",
+        path: "/showreel_2026.html",
+        thumb: "/hero-skill-logos/skill-logo-02.webp",
+        meta: "15s · 16:9 影院宽屏 · 瑞士 Kinetic 高能排印 + 3D 多面体拓扑与极速字效冲击 · 4 幕动态大片",
+        tags: [{ text: "设计师Showreel", type: "hero" }, { text: "3D WebGL", type: "purple" }, { text: "Rubber Stamp", type: "spec" }]
+      },
+      {
+        title: "Skillry.dev Agent Skills 官方网站镜像全套",
+        path: "/skillry_saved/index.html",
+        thumb: "/logo.png",
+        meta: "Skillry.dev 完整网页存档 · 涵盖 Skills 目录 / Pricing / Learn / 图标与 CSS/JS 静态资产",
+        tags: [{ text: "网站镜像存档", type: "spec" }]
+      }
+    ]
+  }
+];
+
+function renderDashboard() {
+  const grid = document.getElementById('dashboard-grid');
+  let totalWorks = 0;
+
+  grid.innerHTML = CATEGORY_REGISTRY.map(cat => {
+    totalWorks += cat.works.length;
+    return `
+      <section class="category-panel">
+        <div class="panel-header">
+          <div class="panel-header-left">
+            <span class="panel-icon">${cat.icon}</span>
+            <h2 class="panel-title">${cat.name}</h2>
+          </div>
+          <span class="panel-pill">${cat.works.length} 个作品</span>
+        </div>
+        <p class="panel-desc">${cat.description}</p>
+        <div class="works-container">
+          ${cat.works.map(w => `
+            <div class="work-card">
+              <div class="work-thumb-wrapper" onclick="openModal('${w.title}', '${w.path}')" title="点击立即预览 ${w.title}">
+                <img src="${w.thumb}" alt="${w.title}" class="work-thumb" loading="lazy" />
+                <div class="thumb-play-overlay">▶</div>
+              </div>
+              <div class="work-content">
+                <div class="work-top-row">
+                  <div class="work-name" title="${w.title}">${w.title}</div>
+                  <div class="tag-group">
+                    ${w.tags ? w.tags.map(t => `<span class="tag tag-${t.type}">${t.text}</span>`).join('') : ''}
+                  </div>
+                </div>
+                <div class="work-meta">${w.meta}</div>
+                <div class="work-actions">
+                  <button class="btn btn-preview" onclick="openModal('${w.title}', '${w.path}')">▶ 预览</button>
+                  <a href="${w.path}" target="_blank" class="btn btn-open">↗ 打开</a>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </section>
+    `;
+  }).join('');
+
+  document.getElementById('cat-count').innerText = CATEGORY_REGISTRY.length;
+  document.getElementById('work-count').innerText = totalWorks;
+}
+
+function openModal(title, url) {
+  document.getElementById('modal-title-text').innerText = title;
+  document.getElementById('modal-external-link').href = url;
+  document.getElementById('preview-frame').src = url;
+  document.getElementById('preview-modal').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('preview-modal').classList.remove('active');
+  document.getElementById('preview-frame').src = 'about:blank';
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
+});
+
+renderDashboard();
+</script>
+
+</body>
+</html>

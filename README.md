@@ -94,6 +94,23 @@ The models download about 4 GB of weights into `analysis/.cache/`; delete that f
 - **Song:** "I'm Upping My P(doom)". The lyrics are by [osmarks](https://docs.osmarks.net/hypha/p%28doom%29_song_objectively_correct_interpretation), built on an opening verse and chorus by [MusicPerson](https://www.udio.com/creators/MusicPerson), with lines suggested on the EleutherAI Discord and help from Claude on the outro and final chorus. The original was generated with Udio and released in November 2024 ([YouTube](https://www.youtube.com/watch?v=uEB5E67vcPA)). This video uses the "Claude-Pop" version made with Suno, posted by [deckard (@slimer48484)](https://x.com/slimer48484/status/2097752569212756134) in September 2026.
 - **Fonts:** Archivo, IBM Plex Mono and Cormorant Garamond (SIL Open Font License). Single-stroke EMS and Hershey fonts via the `hersheytext` package (OFL / public domain).
 
+## 15-Second Motion Designer Showreels (作品集与提示词库)
+
+本项目现已沉淀四大国际顶级动态视觉风格，支持在旗舰播放器中一键实时无缝切换（9:16 竖屏，纯代码 `render(t)` 驱动，双音轨独立调节，零外部依赖）：
+
+- 📐 **瑞士工程制图风（黑橙）** (Swiss CAD Blueprint)
+- ⚡ **前卫酸性粗野主义（荧光绿）** (Acid Brutalist)
+- 🏆 **全息棱镜色散风（极光紫蓝）** (Prism Quantum Award-Winner)
+- 🇨🇭 **经典瑞士国际主义平面风（红白黑）** (Swiss International Typographic Style)
+
+🔗 **旗舰播放器**：[`portfolio_15s_showreel.html`](portfolio_15s_showreel.html)
+
+### 🌟 经典神级提示词
+完整提示词解析与设计方法论见文档 [`docs/PROMPT_LIBRARY.md`](docs/PROMPT_LIBRARY.md)：
+> `gemini4 全力以赴 - “制作一段动态的 15 秒动态图形视频，展示你是一位多么出色的动态设计师，就好像这是你简历中的作品集。全力以赴。”`
+
+
 ## License
 
 The code is released under the [MIT License](LICENSE). The fonts in `app/public/fonts/` keep their own licenses (see Credits), and the song and lyrics (`audio/`, `lyrics/`, `data/lyrics.json`) are not covered by it: they belong to their authors (see Credits).
+

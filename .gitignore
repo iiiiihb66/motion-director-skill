@@ -14,3 +14,5 @@ analysis/__pycache__/
 analysis/stems/
 analysis/work/
 analysis/qa/
+.workbuddy/
+app/dist/

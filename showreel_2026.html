@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Motion Designer Portfolio Showreel 2026</title>
+<style>
+/* CSS Reset and Player UI */
+body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #fff; }
+#canvas-container { position: absolute; top: 0; left: 0; right: 300px; bottom: 0; display: flex; align-items: center; justify-content: center; background: #050505; transition: right 0.3s; }
+canvas { max-width: 100%; max-height: 100%; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
+#player-aside { position: absolute; right: 0; top: 0; bottom: 0; width: 300px; background: #111; border-left: 1px solid #333; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; transition: transform 0.3s; z-index: 50; }
+.panel-title { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #888; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+.control-group { margin-bottom: 20px; }
+button { background: #fff; color: #000; border: none; padding: 10px 15px; font-weight: bold; cursor: pointer; text-transform: uppercase; width: 100%; margin-bottom: 5px; font-size: 12px; transition: background 0.2s, transform 0.1s; }
+button:hover { background: #ccc; }
+button:active { transform: scale(0.98); }
+button.active { background: #f00; color: #fff; }
+.btn-scene { background: #222; color: #fff; border: 1px solid #444; text-align: left; padding-left: 20px; }
+.btn-scene:hover { background: #333; }
+.btn-scene.active { background: #fff; color: #000; border-color: #fff; }
+#time-display { font-family: monospace; font-size: 32px; text-align: center; margin: 10px 0 20px; color: #0f0; text-shadow: 0 0 5px rgba(0,255,0,0.5); }
+input[type="range"] { width: 100%; cursor: pointer; accent-color: #f00; }
+#start-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #050505; display: flex; align-items: center; justify-content: center; z-index: 100; flex-direction: column; }
+#start-overlay h1 { font-size: 42px; margin-bottom: 10px; letter-spacing: -1px; text-transform: uppercase; }
+#start-overlay p { color: #888; margin-bottom: 40px; font-family: monospace; }
+#start-btn { width: auto; font-size: 16px; padding: 15px 40px; background: #fff; border-radius: 30px; }
+.shortcut-hint { margin-top: auto; color: #555; font-size: 11px; line-height: 1.6; padding-top: 20px; border-top: 1px solid #222; font-family: monospace; }
+.shortcut-hint span { color: #888; }
+</style>
+</head>
+<body>
+
+<div id="canvas-container">
+    <canvas id="stage" width="1920" height="1080"></canvas>
+</div>
+
+<div id="player-aside">
+    <div class="panel-title">Director Control</div>
+    
+    <div id="time-display">00.000</div>
+    
+    <div class="control-group">
+        <input type="range" id="seek-bar" min="0" max="15" step="0.016" value="0">
+    </div>
+    
+    <div class="control-group">
+        <button id="btn-play-pause">Play / Pause</button>
+    </div>
+    
+    <div class="control-group" style="margin-top: 20px;">
+        <div class="panel-title">Scenes</div>
+        <button class="btn-scene" data-time="0">1. Manifesto</button>
+        <button class="btn-scene" data-time="3.5">2. 3D Geometry</button>
+        <button class="btn-scene" data-time="7.5">3. Kinetic Slam</button>
+        <button class="btn-scene" data-time="11.5">4. Signature</button>
+    </div>
+    
+    <div class="shortcut-hint">
+        [ SPACE ] <span>Play/Pause</span><br>
+        [ ← / → ] <span>Seek ±1s</span><br>
+        [ 1 - 4 ] <span>Jump to Scene</span><br>
+        [ H ] <span>Toggle UI</span>
+    </div>
+</div>
+
+<div id="start-overlay">
+    <h1>MOTION SHOWREEL 2026</h1>
+    <p>PURE HTML/JS ARCHITECTURE // F = f(t) // WEB AUDIO ENGINE</p>
+    <button id="start-btn">INITIALIZE & PLAY</button>
+</div>
+
+<script>
+const DURATION = 15.0;
+const canvas = document.getElementById('stage');
+const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
+const W = canvas.width;
+const H = canvas.height;
+let currentTime = 0;
+let isPlaying = false;
+let lastRafTime = 0;
+let rafId = null;
+let panelVisible = true;
+
+// Web Audio Synth
+class AudioEngine {
+    constructor() {
+        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        this.masterGain = this.ctx.createGain();
+        this.masterGain.gain.value = 0.6;
+        this.masterGain.connect(this.ctx.destination);
+    }
+    
+    resume() { this.ctx.resume(); }
+    
+    playKick(time) {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        
+        osc.frequency.setValueAtTime(150, time);
+        osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.3);
+        gain.gain.setValueAtTime(1, time);
+        gain.gain.exponentialRampToValueAtTime(0.01, time + 0.3);
+        
+        osc.start(time);
+        osc.stop(time + 0.3);
+    }
+    
+    playHat(time) {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(8000, time);
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        
+        gain.gain.setValueAtTime(0.1, time);
+        gain.gain.exponentialRampToValueAtTime(0.01, time + 0.05);
+        
+        osc.start(time);
+        osc.stop(time + 0.05);
+    }
+}
+
+let audio = null;
+let lastBeat = -1;
+
+function updateAudio(t) {
+    if(!audio) return;
+    const beatIndex = Math.floor(t / 0.125); // 16th notes for fast rhythm
+    if(beatIndex > lastBeat) {
+        lastBeat = beatIndex;
+        if(isPlaying) {
+            const time = audio.ctx.currentTime + 0.01;
+            if(beatIndex % 4 === 0) {
+                audio.playKick(time);
+            } else if(beatIndex % 2 === 0) {
+                audio.playHat(time);
+            } else if(t > 7.5 && t < 11.5) { // Intense rhythm in Kinetic Slam
+                audio.playHat(time);
+            }
+        }
+    }
+}
+
+// Math Utilities
+function easeOutExpo(x) { return x === 1 ? 1 : 1 - Math.pow(2, -10 * x); }
+function easeInOutCirc(x) { return x < 0.5 ? (1 - Math.sqrt(1 - Math.pow(2 * x, 2))) / 2 : (Math.sqrt(1 - Math.pow(-2 * x + 2, 2)) + 1) / 2; }
+function random(seed) { var x = Math.sin(seed++) * 10000; return x - Math.floor(x); }
+
+// Global post-processing
+function applyNoise(alpha = 0.03) {
+    ctx.fillStyle = `rgba(0,0,0,${alpha})`;
+    ctx.fillRect(0,0,W,H); // simple darkening acting as faux film fade
+}
+
+function renderManifesto(t) {
+    const localT = t;
+    ctx.fillStyle = '#ebede9';
+    ctx.fillRect(0, 0, W, H);
+    
+    // HUD Lines
+    ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for(let i=0; i<H; i+=40) { ctx.moveTo(0, i); ctx.lineTo(W, i); }
+    ctx.stroke();
+    
+    ctx.fillStyle = '#0f110c';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    let scale = 1 + easeOutExpo(Math.min(1, localT)) * 0.05;
+    ctx.save();
+    ctx.translate(W/2, H/2);
+    ctx.scale(scale, scale);
+    
+    ctx.font = '900 160px Helvetica, sans-serif';
+    ctx.letterSpacing = '-5px';
+    if(localT > 0.3) ctx.fillText('MOTION DESIGN', 0, -90);
+    if(localT > 0.6) ctx.fillText('ENGINEERING', 0, 90);
+    
+    ctx.restore();
+    
+    // Scanline scan bar
+    let scanY = (localT * 800) % H;
+    ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+    ctx.fillRect(0, scanY, W, 4);
+    
+    // Meta Data
+    ctx.font = '24px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#0f110c';
+    ctx.fillText(`SYS_TIME: ${localT.toFixed(3)}`, 80, 80);
+    ctx.fillText(`ID: SHOWREEL_2026`, 80, 120);
+}
+
+// Pre-compute 3D topology
+const geom = [];
+for(let i=0; i<500; i++) {
+    const u = random(i) * Math.PI * 2;
+    const v = random(i+500) * Math.PI * 2;
+    geom.push({
+        x: Math.sin(u) * Math.cos(v),
+        y: Math.sin(u) * Math.sin(v),
+        z: Math.cos(u),
+        size: random(i+1000) * 8 + 2
+    });
+}
+
+function renderGeometry(t) {
+    const localT = t - 3.5;
+    ctx.fillStyle = '#0f110c';
+    ctx.fillRect(0, 0, W, H);
+    
+    const rotY = localT * 0.8;
+    const rotX = localT * 0.4;
+    const radius = 400 + Math.sin(localT * Math.PI) * 150;
+    
+    ctx.save();
+    ctx.translate(W/2, H/2);
+    
+    ctx.strokeStyle = 'rgba(0, 85, 255, 0.4)';
+    ctx.lineWidth = 1;
+    
+    ctx.beginPath();
+    for(let i=0; i<geom.length; i++) {
+        let p = geom[i];
+        
+        let x1 = p.x * Math.cos(rotY) - p.z * Math.sin(rotY);
+        let z1 = p.z * Math.cos(rotY) + p.x * Math.sin(rotY);
+        let y2 = p.y * Math.cos(rotX) - z1 * Math.sin(rotX);
+        let z2 = z1 * Math.cos(rotX) + p.y * Math.sin(rotX);
+        
+        let scale = 1200 / (1200 + z2 * radius);
+        let sx = x1 * radius * scale;
+        let sy = y2 * radius * scale;
+        
+        if(i===0) ctx.moveTo(sx, sy);
+        else if (i % 3 === 0) ctx.lineTo(sx, sy);
+        
+        // Risograph halftone dot styling
+        ctx.fillStyle = (i % 2 === 0) ? '#0055ff' : '#ebede9';
+        ctx.beginPath();
+        ctx.arc(sx, sy, p.size * scale, 0, Math.PI*2);
+        ctx.fill();
+    }
+    ctx.stroke();
+    
+    ctx.restore();
+    
+    ctx.fillStyle = '#ebede9';
+    ctx.font = '800 60px Helvetica';
+    ctx.textAlign = 'center';
+    ctx.letterSpacing = '10px';
+    ctx.fillText('PROCEDURAL TOPOLOGY', W/2, H - 120);
+}
+
+function renderKinetic(t) {
+    const localT = t - 7.5;
+    ctx.fillStyle = '#ebede9'; 
+    ctx.fillRect(0, 0, W, H);
+    
+    const beat = (localT * 4) % 1.0; 
+    const wordIdx = Math.floor(localT * 4);
+    const words = ["F=f(t)", "PURE", "CODE", "IMPACT", "NO", "TIMELINE", "KINETIC", "SLAM"];
+    const word = words[wordIdx % words.length];
+    
+    ctx.fillStyle = '#0f110c';
+    if(wordIdx % 2 !== 0) {
+        ctx.fillStyle = '#d92525';
+        ctx.fillRect(0,0,W,H);
+        ctx.fillStyle = '#ebede9';
+    }
+    
+    const size = 300 + Math.pow(1 - beat, 5) * 2000;
+    
+    ctx.font = `900 ${size}px Helvetica`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(word, W/2, H/2);
+    
+    // Stamps
+    if(beat < 0.2) {
+        ctx.save();
+        ctx.translate(W/2 + (random(wordIdx)-0.5)*800, H/2 + (random(wordIdx+1)-0.5)*600);
+        ctx.rotate((random(wordIdx+2)-0.5));
+        ctx.fillStyle = wordIdx % 2 === 0 ? '#d92525' : '#0f110c';
+        ctx.font = '800 120px Helvetica';
+        ctx.globalCompositeOperation = 'multiply';
+        ctx.fillText('APPROVED', 0, 0);
+        ctx.restore();
+    }
+}
+
+function renderSignature(t) {
+    const localT = t - 11.5;
+    ctx.fillStyle = '#0f110c';
+    ctx.fillRect(0, 0, W, H);
+    
+    const progress = Math.min(1, localT / 1.0);
+    const ease = easeInOutCirc(progress);
+    
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    ctx.save();
+    ctx.translate(W/2, H/2 - 50);
+    const sScale = 0.8 + ease*0.2;
+    ctx.scale(sScale, sScale);
+    ctx.globalAlpha = ease;
+    ctx.fillStyle = '#ebede9';
+    ctx.font = '900 200px Helvetica';
+    ctx.letterSpacing = '-8px';
+    ctx.fillText('DIRECTOR', 0, 0);
+    ctx.restore();
+    
+    ctx.font = '700 36px Helvetica';
+    ctx.fillStyle = '#0055ff';
+    ctx.globalAlpha = Math.max(0, (localT - 0.5) * 2);
+    ctx.fillText('MOTION DESIGN & WEBGL ENGINEERING', W/2, H/2 + 80);
+    
+    ctx.font = '24px monospace';
+    ctx.fillStyle = '#888';
+    ctx.globalAlpha = Math.max(0, (localT - 1.0) * 2);
+    ctx.fillText('AVAILABLE FOR NEW PROJECTS // 2026', W/2, H/2 + 150);
+    
+    // Cycle indicator for smooth loop
+    if(localT > 2.5) {
+        const outProgress = (localT - 2.5) / 1.0;
+        ctx.fillStyle = '#000';
+        ctx.globalAlpha = outProgress;
+        ctx.fillRect(0,0,W,H);
+    }
+    ctx.globalAlpha = 1.0;
+}
+
+function render(t) {
+    if(t < 3.5) renderManifesto(t);
+    else if(t < 7.5) renderGeometry(t);
+    else if(t < 11.5) renderKinetic(t);
+    else renderSignature(t);
+    
+    applyNoise();
+}
+
+function loop(timestamp) {
+    if(!lastRafTime) lastRafTime = timestamp;
+    const dt = (timestamp - lastRafTime) / 1000;
+    lastRafTime = timestamp;
+    
+    if(isPlaying) {
+        currentTime += dt;
+        if(currentTime >= DURATION) {
+            currentTime = currentTime % DURATION;
+            lastBeat = -1; // reset audio sync
+        }
+        updateUI();
+        updateAudio(currentTime);
+        render(currentTime);
+    }
+    
+    rafId = requestAnimationFrame(loop);
+}
+
+// UI Controllers
+const seekBar = document.getElementById('seek-bar');
+const timeDisplay = document.getElementById('time-display');
+const btnPlayPause = document.getElementById('btn-play-pause');
+const startOverlay = document.getElementById('start-overlay');
+const startBtn = document.getElementById('start-btn');
+const sceneBtns = document.querySelectorAll('.btn-scene');
+const playerAside = document.getElementById('player-aside');
+const canvasContainer = document.getElementById('canvas-container');
+
+function updateUI() {
+    seekBar.value = currentTime;
+    timeDisplay.innerText = currentTime.toFixed(3);
+    
+    sceneBtns.forEach(btn => btn.classList.remove('active'));
+    if(currentTime < 3.5) sceneBtns[0].classList.add('active');
+    else if(currentTime < 7.5) sceneBtns[1].classList.add('active');
+    else if(currentTime < 11.5) sceneBtns[2].classList.add('active');
+    else sceneBtns[3].classList.add('active');
+}
+
+function togglePlay() {
+    isPlaying = !isPlaying;
+    btnPlayPause.classList.toggle('active', isPlaying);
+    if(isPlaying && audioCtx) {
+        audioCtx.resume();
+        lastRafTime = performance.now(); // avoid delta jump
+    } else {
+        // Render once on pause
+        render(currentTime); 
+    }
+}
+
+btnPlayPause.addEventListener('click', togglePlay);
+
+seekBar.addEventListener('input', (e) => {
+    currentTime = parseFloat(e.target.value);
+    lastBeat = Math.floor(currentTime / 0.125) - 1;
+    render(currentTime);
+    updateUI();
+});
+
+sceneBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        currentTime = parseFloat(btn.dataset.time);
+        lastBeat = Math.floor(currentTime / 0.125) - 1;
+        render(currentTime);
+        updateUI();
+    });
+});
+
+startBtn.addEventListener('click', () => {
+    startOverlay.style.display = 'none';
+    audio = new AudioEngine();
+    audioCtx = audio.ctx;
+    lastRafTime = performance.now();
+    togglePlay();
+    rafId = requestAnimationFrame(loop);
+});
+
+window.addEventListener('keydown', (e) => {
+    if(startOverlay.style.display !== 'none') return;
+    
+    if(e.code === 'Space') {
+        e.preventDefault();
+        togglePlay();
+    } else if(e.code === 'ArrowRight') {
+        currentTime = Math.min(DURATION - 0.01, currentTime + 1);
+        lastBeat = Math.floor(currentTime / 0.125) - 1;
+        updateUI();
+        if(!isPlaying) render(currentTime);
+    } else if(e.code === 'ArrowLeft') {
+        currentTime = Math.max(0, currentTime - 1);
+        lastBeat = Math.floor(currentTime / 0.125) - 1;
+        updateUI();
+        if(!isPlaying) render(currentTime);
+    } else if(e.key >= '1' && e.key <= '4') {
+        const idx = parseInt(e.key) - 1;
+        if(sceneBtns[idx]) sceneBtns[idx].click();
+    } else if(e.code === 'KeyH') {
+        panelVisible = !panelVisible;
+        playerAside.style.transform = panelVisible ? 'translateX(0)' : 'translateX(100%)';
+        canvasContainer.style.right = panelVisible ? '300px' : '0';
+        // Auto resize canvas logical resolution vs CSS to keep aspect ratio could be done here, 
+        // but current setup uses max-width/max-height for responsive scaling.
+    }
+});
+
+// Initial draw behind overlay
+render(0);
+</script>
+</body>
+</html>

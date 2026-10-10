@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#070c14">
+<title>光的历程：从微粒到量子 · 教育艺术动画片 (The Odyssey of Light)</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #070c14;
+  --panel: #0d1624;
+  --panel2: #142032;
+  --edge: #22344d;
+  --gold: #ffd15c;
+  --amber: #ff9800;
+  --cyan: #00e5ff;
+  --ruby: #ff3d55;
+  --paper: #f4eedb;
+  --muted: #8b9baa;
+  --white: #ffffff;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  color: var(--paper);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Songti SC", serif;
+  overflow-x: hidden;
+  user-select: none;
+}
+
+#app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 16px 24px;
+  gap: 16px;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+/* Header */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--edge);
+  padding-bottom: 12px;
+}
+.brand-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.brand-title h1 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--gold);
+  font-family: "PingFang SC", "Songti SC", serif;
+}
+.brand-title span.tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  background: rgba(0, 229, 255, 0.15);
+  color: var(--cyan);
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  border-radius: 4px;
+  font-family: ui-monospace, monospace;
+}
+.header-meta {
+  font-size: 12px;
+  color: var(--muted);
+  font-family: ui-monospace, monospace;
+}
+
+/* Theater Stage Frame */
+.theater-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #04070c;
+  border-radius: 12px;
+  border: 1px solid var(--edge);
+  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.9), 0 0 50px rgba(0, 229, 255, 0.08);
+  overflow: hidden;
+}
+#webgl-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+#hud-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Subtitle & Narration Banner */
+.subtitle-banner {
+  background: rgba(13, 22, 36, 0.92);
+  border: 1px solid var(--edge);
+  border-radius: 10px;
+  padding: 14px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  backdrop-filter: blur(12px);
+}
+#chapter-title {
+  font-size: 14px;
+  color: var(--gold);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+#subtitle-zh {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--paper);
+  font-family: "Songti SC", "PingFang SC", serif;
+}
+#subtitle-en {
+  font-size: 12px;
+  color: var(--muted);
+  font-family: ui-monospace, monospace;
+}
+
+/* Chapter Jump Pills */
+.chapter-nav {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.chapter-pill {
+  cursor: pointer;
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  color: var(--muted);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.chapter-pill:hover {
+  border-color: var(--gold);
+  color: var(--paper);
+}
+.chapter-pill.active {
+  background: rgba(255, 209, 92, 0.15);
+  border-color: var(--gold);
+  color: var(--gold);
+  font-weight: 700;
+}
+
+/* Player Controls Bar */
+.player-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  padding: 12px 20px;
+  border-radius: 10px;
+}
+#btn-play {
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--gold), var(--amber));
+  color: #070c14;
+  border: none;
+  font-size: 14px;
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(255, 209, 92, 0.35);
+  transition: transform 0.15s;
+}
+#btn-play:hover {
+  transform: scale(1.04);
+}
+.time-display {
+  font-family: ui-monospace, monospace;
+  font-size: 13px;
+  color: var(--muted);
+  min-width: 95px;
+}
+#seek-slider {
+  flex: 1;
+  accent-color: var(--gold);
+  cursor: pointer;
+  height: 6px;
+}
+.tool-group {
+  display: flex;
+  gap: 8px;
+}
+.tool-btn {
+  cursor: pointer;
+  background: var(--panel2);
+  border: 1px solid var(--edge);
+  color: var(--paper);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+.tool-btn:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+/* Footer & Educational Attribution */
+footer {
+  margin-top: auto;
+  border-top: 1px solid var(--edge);
+  padding-top: 12px;
+  font-size: 11px;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+}
+footer a { color: var(--gold); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div id="app-container">
+  <header>
+    <div class="brand-title">
+      <h1>光的历程 · 从微粒到量子</h1>
+      <span class="tag">THE ODYSSEY OF LIGHT</span>
+      <span class="tag" style="color:var(--gold); border-color:rgba(255,209,92,0.4); background:rgba(255,209,92,0.1);">100年前民国雅言</span>
+    </div>
+    <div class="header-meta">
+      GEMINI 3.8 FLASH TTS · 60 FPS MATHEMATICAL WEBGPU/WEBGL
+    </div>
+  </header>
+
+  <!-- 16:9 Cinematic Theater Stage -->
+  <div class="theater-stage">
+    <canvas id="webgl-canvas" width="1280" height="720"></canvas>
+    <canvas id="hud-canvas" width="1280" height="720"></canvas>
+  </div>
+
+  <!-- Classical Chinese Subtitle & Formula Banner -->
+  <div class="subtitle-banner">
+    <div id="chapter-title">序幕 · 暗室与烛光 (Prologue: The Ancient Light & Pinhole)</div>
+    <div id="subtitle-zh">天地玄黄，万象森罗。若问造化之中，何物最是神奥？莫过于光。</div>
+    <div id="subtitle-en">Camera Obscura (公元前400年 - 公元1000年海什木)</div>
+  </div>
+
+  <!-- Chapter Jump Navigation -->
+  <div class="chapter-nav">
+    <button class="chapter-pill active" data-act="0">00 序幕 · 暗室小孔</button>
+    <button class="chapter-pill" data-act="1">01 第一幕 · 牛顿棱镜</button>
+    <button class="chapter-pill" data-act="2">02 第二幕 · 双缝与泊松亮斑</button>
+    <button class="chapter-pill" data-act="3">03 第三幕 · 麦克斯韦电磁波</button>
+    <button class="chapter-pill" data-act="4">04 第四幕 · 光电效应量子</button>
+    <button class="chapter-pill" data-act="5">05 第五幕 · 单光子双缝干涉</button>
+    <button class="chapter-pill" data-act="6">06 终曲 · 既非亦皆是</button>
+  </div>
+
+  <!-- Player Controls Bar -->
+  <div class="player-controls">
+    <button id="btn-play">▶　播放</button>
+    <div class="time-display">
+      <span id="time-current">00:00</span> / <span id="time-total">09:15</span>
+    </div>
+    <input id="seek-slider" type="range" min="0" max="555.94" step="0.1" value="0" aria-label="播放进度">
+    <div class="tool-group">
+      <button id="btn-mute-voice" class="tool-btn">🎙 旁白：开</button>
+      <button id="btn-mute-bgm" class="tool-btn">♪ 配乐：开</button>
+    </div>
+  </div>
+
+  <footer>
+    <div>
+      <b>操作提示：</b>空格键 播放/暂停 · [ 与 ] 切换幕次 · ← 与 → 步进5秒。
+    </div>
+    <div>
+      音轨采用 Google <b>Gemini 3.8 Flash TTS</b>（Charon 慢速优雅民国讲演腔）· 纯数学物理方程驱动
+    </div>
+  </footer>
+</div>
+
+<!-- Audio Tracks -->
+<audio id="audio-voice" src="audio/odyssey_narration_full.mp3" preload="auto"></audio>
+<audio id="audio-bgm" src="audio/ambient_light_score.mp3" preload="auto" loop></audio>
+
+<!-- Bundled 3D Engine & Scripts -->
+<script src="assets/light-bundle.js"></script>
+<script src="src/player.js"></script>
+
+</body>
+</html>

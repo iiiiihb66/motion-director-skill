@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>犯罪学视觉 · Three.js 版</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;font-family:-apple-system,BlinkMacSystemFont,sans-serif;overflow:hidden;color:#fff}
+#container{width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#0a0e14 0%,#000 100%)}
+#canvas{display:block;max-width:100%;max-height:100%;width:auto;height:auto;box-shadow:0 0 60px rgba(255,61,85,.3)}
+#controls{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(10,13,18,.92);backdrop-filter:blur(8px);border:1px solid rgba(188,203,208,.15);border-radius:999px;padding:12px 24px;display:flex;gap:16px;align-items:center;z-index:10}
+#playBtn{background:linear-gradient(135deg,#ff3d55,#ff5e72);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s}
+#playBtn:hover{transform:scale(1.08);box-shadow:0 4px 16px rgba(255,61,85,.5)}
+#playBtn:active{transform:scale(.95)}
+#progress{flex:1;min-width:200px;height:6px;background:rgba(161,181,187,.2);border-radius:3px;cursor:pointer;position:relative;overflow:hidden}
+#progressBar{height:100%;background:linear-gradient(90deg,#ff3d55,#ff5e72);width:0%;transition:width .1s linear;border-radius:3px;position:relative}
+#progressBar::after{content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);width:12px;height:12px;background:#fff;border-radius:50%;box-shadow:0 0 8px rgba(255,61,85,.8)}
+#time{font-size:13px;color:#bacbd0;font-variant-numeric:tabular-nums;min-width:80px;text-align:center}
+#scene{font-size:12px;color:rgba(186,203,208,.7);position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(10,13,18,.85);padding:8px 16px;border-radius:16px;border:1px solid rgba(188,203,208,.1)}
+.safeZone{position:fixed;pointer-events:none;z-index:5;opacity:.3;display:none}
+.safeZone.top{top:0;left:0;right:0;height:180px;background:linear-gradient(to bottom,rgba(255,61,85,.3),transparent)}
+.safeZone.bottom{bottom:0;left:0;right:0;height:280px;background:linear-gradient(to top,rgba(255,61,85,.3),transparent)}
+.safeZone.left,.safeZone.right{top:0;bottom:0;width:60px;background:rgba(255,61,85,.15)}
+.safeZone.left{left:0}.safeZone.right{right:0}
+#info{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:14px;color:rgba(186,203,208,.6);text-align:center;pointer-events:none;z-index:1}
+</style>
+</head>
+<body>
+<div id="container">
+  <canvas id="canvas" width="1080" height="1920"></canvas>
+</div>
+<div class="safeZone top"></div>
+<div class="safeZone bottom"></div>
+<div class="safeZone left"></div>
+<div class="safeZone right"></div>
+<div id="scene">场景加载中...</div>
+<div id="info">点击播放按钮开始</div>
+<div id="controls">
+  <button id="playBtn">▶</button>
+  <div id="progress"><div id="progressBar"></div></div>
+  <div id="time">0.00 / 15.00</div>
+</div>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+
+// ============================================================================
+// Utility functions (from pdoom engine/util.ts)
+// ============================================================================
+const ease={
+  inOutCubic:t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2,
+  outExpo:t=>t===1?1:1-Math.pow(2,-10*t),
+  inExpo:t=>t===0?0:Math.pow(2,10*t-10),
+  inOutExpo:t=>t===0?0:t===1?1:t<.5?Math.pow(2,20*t-10)/2:(2-Math.pow(2,-20*t+10))/2,
+};
+function prog(t,s,e,fn=x=>x){return t<=s?0:t>=e?1:fn((t-s)/(e-s))}
+function springStep(t,v=1,d=.8){return t<0?0:1-Math.exp(-v*t)*Math.cos(d*v*t)}
+function keys(t,kf){for(let i=0;i<kf.length;i++){const[ts,val,fn]=kf[i];if(t<=ts)return i===0?val:kf[i-1][1]+(val-kf[i-1][1])*prog(t,kf[i-1][0],ts,fn||ease.inOutCubic)}return kf[kf.length-1][1]}
+function hash(i,s=0){let h=(i*2654435761^s*1597334677)>>>0;h=((h^(h>>>16))*0x85ebca6b)>>>0;h=((h^(h>>>16))*0xc2b2ae35)>>>0;return((h^(h>>>16))>>>0)/0x100000000}
+
+// ============================================================================
+// Scene setup (from crim-motion.ts, adapted for standalone HTML)
+// ============================================================================
+const CUTS=[0,2.5,5,7.5,10,12.5,15]; // 7 scenes, 15 seconds total
+const SCENE_NAMES=['档案堆叠','指纹扫描','轨迹追踪','数据交换','网络节点','环形动画','档案库'];
+
+const canvas=document.getElementById('canvas');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
+renderer.setClearColor('#080c10');
+
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(40,9/16,.1,100);
+scene.fog=new THREE.FogExp2('#080c10',.025);
+
+// Lighting
+scene.add(new THREE.AmbientLight('#bcd8e5',1.1));
+const key=new THREE.DirectionalLight('#eef4ef',3);
+key.position.set(-5,8,6);
+scene.add(key);
+const rim=new THREE.PointLight('#ff3d55',25,20);
+rim.position.set(5,2,4);
+scene.add(rim);
+
+// Animated background shader
+const bgUniforms={t:{value:0},uv:{value:0}};
+const bgMat=new THREE.ShaderMaterial({
+  depthTest:false,depthWrite:false,uniforms:bgUniforms,
+  vertexShader:'varying vec2 v;void main(){v=uv;gl_Position=vec4(position.xy,1.,1.);}',
+  fragmentShader:`precision highp float;varying vec2 v;uniform float t,uv;
+void main(){
+  vec2 p=(v-.5)*vec2(.5625,1.);
+  vec2 q=p*35.+vec2(0.,t*.1);
+  vec2 g=abs(fract(q)-.5);
+  float grid=smoothstep(.46,.49,max(g.x,g.y));
+  vec3 c=vec3(.022,.027,.032)+vec3(.04,.055,.065)*exp(-length(p)*3.);
+  c+=mix(vec3(.12,.022,.03),vec3(.012,.06,.12),uv)*grid*.18;
+  float sweep=exp(-pow((p.y-fract(t*.055)+.5)/.017,2.));
+  c+=mix(vec3(.18,.04,.04),vec3(.01,.08,.2),uv)*sweep*.22;
+  gl_FragColor=vec4(c,1.);
+}`});
+const bg=new THREE.Mesh(new THREE.PlaneGeometry(2,2),bgMat);
+bg.frustumCulled=false;
+bg.renderOrder=-1000;
+scene.add(bg);
+
+// Hero group (holds all scene objects)
+const hero=new THREE.Group();
+hero.position.y=-1.3;
+scene.add(hero);
+const groups=Array.from({length:7},()=>new THREE.Group());
+hero.add(...groups);
+
+// Utility: create line segments
+function segments(coords,color='#a1b5bb',opacity=.6){
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.Float32BufferAttribute(coords,3));
+  return new THREE.LineSegments(g,new THREE.LineBasicMaterial({color,transparent:true,opacity}));
+}
+
+// Scene 0: File stack
+const files=[];
+for(let i=0;i<7;i++){
+  const g=new THREE.Group(),b=new THREE.BoxGeometry(3.5,2.1,.08);
+  g.add(new THREE.Mesh(b,new THREE.MeshStandardMaterial({color:'#192630',metalness:.45,roughness:.36})));
+  g.add(new THREE.LineSegments(new THREE.EdgesGeometry(b),new THREE.LineBasicMaterial({color:i===3?'#ff3d55':'#bacbd0'})));
+  const rules=[];
+  for(let j=0;j<4;j++)rules.push(-1.35,.60-j*.35,.055,1.25-(j%2)*.45,.60-j*.35,.055);
+  g.add(segments(rules,'#8eb1ba',.7));
+  groups[0].add(g);
+  files.push(g);
+}
+
+// Scene 1: Fingerprint scan
+const fingerprint=[];
+for(let ring=0;ring<33;ring++){
+  const radius=.15+ring*.072;
+  for(let j=0;j<160;j++){
+    const point=a=>[Math.cos(a)*radius*(1+.10*Math.sin(a*3))+Math.sin(a*.5)*.17,Math.sin(a)*radius*1.26+.15*Math.sin(a*2),.22*Math.sin(a*3+ring*.15)];
+    fingerprint.push(...point(j/160*Math.PI*2),...point((j+1)/160*Math.PI*2));
+  }
+}
+const print=segments(fingerprint,'#92e9ff',.87);
+groups[1].add(print);
+const scan=new THREE.Mesh(new THREE.PlaneGeometry(5.2,.018),new THREE.MeshBasicMaterial({color:'#e2fcff',transparent:true,opacity:.8,side:THREE.DoubleSide}));
+groups[1].add(scan);
+
+// Scene 2: Trajectory tracking
+const helical=[];
+for(let k=0;k<6;k++)for(let i=0;i<160;i++){
+  const p=j=>{const z=-3+j/160*6,a=z*2.1+k*Math.PI/3;return[Math.cos(a)*1.4,Math.sin(a)*1.4,z]};
+  helical.push(...p(i),...p(i+1));
+}
+groups[2].add(segments(helical,'#d0e0dc',.6));
+const trajectory=[];
+for(let i=0;i<120;i++){
+  const p=j=>{const x=-3.2+j/120*6.4;return[x,1.9-.32*x*x,.7*Math.sin(x)]};
+  trajectory.push(...p(i),...p(i+1));
+}
+groups[2].add(segments(trajectory,'#ff3d55',.95));
+const tracer=new THREE.Mesh(new THREE.IcosahedronGeometry(.13,1),new THREE.MeshBasicMaterial({color:'#ff5e72'}));
+groups[2].add(tracer);
+
+// Scene 3: Data exchange
+const exchange=new THREE.Group();
+groups[3].add(exchange);
+for(const x of[-1.7,1.7]){
+  const m=new THREE.Mesh(new THREE.IcosahedronGeometry(1.35,2),new THREE.MeshBasicMaterial({color:'#cdd6d4',wireframe:true,transparent:true,opacity:.38}));
+  m.position.x=x;
+  exchange.add(m);
+}
+const transfer=[];
+for(let i=0;i<42;i++){
+  const m=new THREE.Mesh(new THREE.SphereGeometry(.035+(i%4)*.008,6,5),new THREE.MeshBasicMaterial({color:i%3?'#ff4d68':'#bcebf1'}));
+  exchange.add(m);
+  transfer.push(m);
+}
+
+// Scene 4: Network nodes
+const nodes=[];
+for(let i=0;i<27;i++){
+  const m=new THREE.Mesh(new THREE.IcosahedronGeometry(i===13?.23:.09,0),new THREE.MeshBasicMaterial({color:i===13?'#ff3d55':'#cce4e5'}));
+  groups[4].add(m);
+  nodes.push(m);
+}
+const network=new Float32Array(26*6),ng=new THREE.BufferGeometry();
+ng.setAttribute('position',new THREE.BufferAttribute(network,3));
+groups[4].add(new THREE.LineSegments(ng,new THREE.LineBasicMaterial({color:'#bbd1d4',transparent:true,opacity:.64})));
+
+// Scene 5: Concentric rings
+const rings=[];
+for(let i=0;i<6;i++){
+  const m=new THREE.Mesh(new THREE.TorusGeometry(1.7+i*.29,.015,5,130),new THREE.MeshBasicMaterial({color:i%2?'#eff0e4':'#ff3d55',transparent:true,opacity:.6}));
+  m.rotation.set(i*.3,i*.48,i*.26);
+  groups[5].add(m);
+  rings.push(m);
+}
+
+// Scene 6: Vault layers
+const vault=new THREE.Group();
+groups[6].add(vault);
+for(let i=0;i<8;i++){
+  const b=new THREE.BoxGeometry(3.3,2,.06),m=new THREE.LineSegments(new THREE.EdgesGeometry(b),new THREE.LineBasicMaterial({color:i===0?'#ff3d55':'#80a2af',transparent:true,opacity:.8-i*.06}));
+  m.position.z=-i*.55;
+  vault.add(m);
+}
+
+// Ambient dust particles
+const dust=new Float32Array(180*3);
+for(let i=0;i<180;i++)dust.set([(hash(i,1)-.5)*15,(hash(i,2)-.5)*25,-5-hash(i,3)*14],i*3);
+const dg=new THREE.BufferGeometry();
+dg.setAttribute('position',new THREE.BufferAttribute(dust,3));
+scene.add(new THREE.Points(dg,new THREE.PointsMaterial({color:'#70818e',size:.035,opacity:.45,transparent:true})));
+
+// Evidence cloud (morphs between scenes)
+const count=640,cloudPos=new Float32Array(count*3),cloudGeo=new THREE.BufferGeometry();
+cloudGeo.setAttribute('position',new THREE.BufferAttribute(cloudPos,3));
+const cloud=new THREE.Points(cloudGeo,new THREE.PointsMaterial({color:'#9ad5e5',size:.036,transparent:true,opacity:.68,blending:THREE.AdditiveBlending,depthWrite:false}));
+hero.add(cloud);
+
+// Cloud shape functions for each scene
+function shape(s,i,u){
+  const a=i/count*Math.PI*2,r=hash(i,79),b=hash(i,80);
+  switch(s){
+    case 0:return[(r-.5)*4.6,(b-.5)*3.6,Math.floor(i/80)*-.3];
+    case 1:{const q=.3+r*2.1;return[Math.cos(a*11)*q,Math.sin(a*11)*q*1.28,.16*Math.sin(a*22)];}
+    case 2:return[Math.cos(a*8+u)*1.43,Math.sin(a*8+u)*1.43,(r-.5)*6];
+    case 3:{const sign=i%2?1:-1,flow=prog(u,.5,3.8,ease.inOutCubic);return[sign*1.7*(1-flow)+(r-.5)*3.4*flow,Math.sin(a*9)*(1.25-.65*flow),Math.cos(a*9)*1.1];}
+    case 4:{const gather=prog(u,2.3,6.8,ease.inOutExpo);const x=(r-.5)*5,y=(b-.5)*5;const h=a*Math.PI;return[x*(1-gather)+gather*(Math.cos(a)*1.3+.28*Math.cos(a*3)),y*(1-gather)+gather*Math.sin(a)*2.1,(hash(i,81)-.5)*3*(1-gather)+gather*.25*Math.sin(h)];}
+    case 5:return[Math.cos(a*4)*2.3,Math.sin(a*4)*2.3,Math.sin(a*3+u*.4)*.6];
+    default:{const edge=i%4;return[edge<2?(r-.5)*3.5:(edge===2?-1.75:1.75),edge<2?(edge===0?-1:1):(r-.5)*2,-b*4];}
+  }
+}
+
+// ============================================================================
+// Render function (deterministic time-based animation)
+// ============================================================================
+function renderFrame(t){
+  const s=Math.max(0,Math.min(6,CUTS.findIndex(x=>x>t)-1));
+  const u=t-CUTS[s];
+  
+  // Show only current scene group
+  groups.forEach((g,i)=>g.visible=i===s);
+  
+  // Update background shader
+  bgUniforms.t.value=t;
+  bgUniforms.uv.value=s===1?1:0;
+  
+  // Reset camera and hero
+  camera.position.set(0,.4,16);
+  hero.rotation.set(0,0,0);
+  hero.scale.setScalar(1);
+  
+  // Scene-specific animations
+  if(s===0){
+    const p=prog(u,.4,2.3,ease.outExpo);
+    files.forEach((g,i)=>{
+      g.position.set((i-3)*(.1+.25*p),(i-3)*(.05+.44*p),-i*.42);
+      g.rotation.set(-.1,p*.15,i*.045);
+    });
+    hero.rotation.y=keys(u,[[0,.8],[1.5,-.15,ease.outExpo],[2.4,.35,ease.inOutExpo]]);
+    camera.position.z=keys(u,[[0,8],[1.5,17,ease.outExpo],[2.4,11,ease.inExpo]]);
+  }
+  
+  if(s===1){
+    const drawCount=Math.floor(prog(u,.1,2,ease.outExpo)*fingerprint.length/6)*2;
+    print.geometry.setDrawRange(0,drawCount);
+    scan.position.y=3-Math.min(6,u*1.55);
+    groups[1].rotation.set(.1,keys(u,[[0,.7],[1.8,0,ease.outExpo],[2.4,.35,ease.inOutCubic]]),-.08);
+    camera.position.z=keys(u,[[0,20],[1.4,13,ease.outExpo],[2.4,9,ease.inExpo]]);
+  }
+  
+  if(s===2){
+    const x=-3.2+prog(u,.4,2.4,ease.inOutCubic)*6.4;
+    tracer.position.set(x,1.9-.32*x*x,.7*Math.sin(x));
+    hero.rotation.set(.55,keys(u,[[0,.3],[1.3,1.3,ease.outExpo],[2.4,2.2,ease.inOutCubic]]),-.1);
+    camera.position.z=keys(u,[[0,14],[1.6,17,ease.outExpo],[2.4,10,ease.inExpo]]);
+  }
+  
+  if(s===3){
+    exchange.rotation.y=keys(u,[[0,.5],[1.8,0,ease.outExpo],[2.4,-.45,ease.inOutCubic]]);
+    transfer.forEach((m,i)=>{
+      const p=prog(u,.2+i*.035,2.0+i*.035,ease.inOutCubic),a=i/42*Math.PI*2;
+      m.position.set(-1.7+3.4*p,.9*Math.sin(a)*Math.sin(p*Math.PI),.9*Math.cos(a)*Math.sin(p*Math.PI));
+    });
+    camera.position.z=keys(u,[[0,20],[1.5,14,ease.outExpo],[2.4,17]]);
+  }
+  
+  if(s===4){
+    const gather=prog(u,1.3,2.4,ease.inOutExpo);
+    nodes.forEach((m,i)=>{
+      const a=i*.9,r=1.8+hash(i)*1.3;
+      m.position.set((1-gather)*Math.cos(a)*r+gather*((i%3)-1)*1.65,(1-gather)*Math.sin(a)*r+gather*(1-Math.floor(i/9))*1.6,(1-gather)*Math.sin(a*1.2)*1.7+gather*(Math.floor(i/3)%3-1)*1.2);
+    });
+    for(let i=0;i<26;i++){
+      const a=nodes[i].position,b=nodes[(i+1)%27].position;
+      network.set([a.x,a.y,a.z,b.x,b.y,b.z],i*6);
+    }
+    ng.attributes.position.needsUpdate=true;
+    hero.rotation.y=u*.17;
+    camera.position.z=keys(u,[[0,20],[1.8,12,ease.outExpo],[2.4,16]]);
+  }
+  
+  if(s===5){
+    rings.forEach((m,i)=>{
+      m.rotation.y=u*.4+i*.48;
+      m.rotation.z=-u*.22+i*.3;
+      m.scale.setScalar(.7+.3*springStep(u-.15,2,.65));
+    });
+    camera.position.z=keys(u,[[0,9],[1.0,18,ease.outExpo],[2.4,22]]);
+  }
+  
+  if(s===6){
+    vault.rotation.set(-.12,keys(u,[[0,.6],[1.8,0,ease.outExpo],[2.4,0]]),0);
+    vault.scale.setScalar(1-prog(u,1.7,2.4,ease.inExpo)*.85);
+    camera.position.z=keys(u,[[0,11],[2.0,18,ease.outExpo],[2.4,24]]);
+  }
+  
+  // Morph evidence cloud
+  const blend=prog(u,0,.7,ease.inOutCubic);
+  for(let i=0;i<count;i++){
+    const to=shape(s,i,u),from=shape(Math.max(0,s-1),i,s?CUTS[s]-CUTS[s-1]:0);
+    for(let j=0;j<3;j++)cloudPos[i*3+j]=from[j]+(to[j]-from[j])*blend;
+  }
+  cloudGeo.attributes.position.needsUpdate=true;
+  cloud.material.color.set(s===1?'#92e9ff':s===5?'#ff3d55':'#b4d1df');
+  
+  // Camera parallax micro-motion
+  camera.position.x=Math.sin(u*.6)*.55;
+  camera.position.y=.4+Math.sin(u*.5)*.32;
+  camera.lookAt(0,-.35,0);
+  
+  renderer.render(scene,camera);
+  
+  // Update UI
+  document.getElementById('scene').textContent=`场景 ${s+1}/7: ${SCENE_NAMES[s]}`;
+  return s;
+}
+
+// ============================================================================
+// Audio system
+// ============================================================================
+let audioCtx,musicBuf,musicSrc,startTime=0,pauseTime=0,playing=false;
+
+async function initAudio(){
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  const res=await fetch('../audio/criminology-score.mp3');
+  const buf=await res.arrayBuffer();
+  musicBuf=await audioCtx.decodeAudioData(buf);
+}
+
+function playAudio(t=0){
+  if(musicSrc)musicSrc.stop();
+  musicSrc=audioCtx.createBufferSource();
+  musicSrc.buffer=musicBuf;
+  const gain=audioCtx.createGain();
+  gain.gain.value=0.35;
+  musicSrc.connect(gain);
+  gain.connect(audioCtx.destination);
+  musicSrc.start(0,t);
+  startTime=audioCtx.currentTime-t;
+}
+
+function pauseAudio(){
+  if(musicSrc){
+    musicSrc.stop();
+    musicSrc=null;
+  }
+}
+
+function getCurrentTime(){
+  return playing?(audioCtx.currentTime-startTime):pauseTime;
+}
+
+// ============================================================================
+// Player controls
+// ============================================================================
+const playBtn=document.getElementById('playBtn');
+const progress=document.getElementById('progress');
+const progressBar=document.getElementById('progressBar');
+const timeDisplay=document.getElementById('time');
+const infoEl=document.getElementById('info');
+
+const DURATION=15;
+
+playBtn.onclick=async()=>{
+  if(!audioCtx)await initAudio();
+  
+  playing=!playing;
+  if(playing){
+    playBtn.textContent='⏸';
+    infoEl.style.display='none';
+    if(pauseTime>=DURATION)pauseTime=0;
+    playAudio(pauseTime);
+  }else{
+    playBtn.textContent='▶';
+    pauseTime=getCurrentTime();
+    pauseAudio();
+  }
+};
+
+progress.onclick=e=>{
+  const rect=progress.getBoundingClientRect();
+  const x=(e.clientX-rect.left)/rect.width;
+  pauseTime=x*DURATION;
+  if(playing){
+    pauseAudio();
+    playAudio(pauseTime);
+  }
+};
+
+// Main animation loop
+let lastS=-1;
+function tick(){
+  const t=playing?getCurrentTime():pauseTime;
+  if(t>=DURATION&&playing){
+    playing=false;
+    pauseTime=DURATION;
+    pauseAudio();
+    playBtn.textContent='▶';
+  }
+  
+  const s=renderFrame(Math.min(t,DURATION));
+  progressBar.style.width=`${(t/DURATION)*100}%`;
+  timeDisplay.textContent=`${t.toFixed(2)} / ${DURATION.toFixed(2)}`;
+  
+  requestAnimationFrame(tick);
+}
+
+// Responsive canvas sizing
+function resize(){
+  const w=canvas.clientWidth,h=canvas.clientHeight;
+  if(w>0&&h>0){
+    renderer.setSize(w,h,false);
+    camera.aspect=w/h;
+    camera.updateProjectionMatrix();
+  }
+}
+new ResizeObserver(resize).observe(canvas);
+resize();
+
+// Start
+renderFrame(0);
+tick();
+
+// Keyboard shortcuts
+window.addEventListener('keydown',e=>{
+  if(e.code==='Space'){
+    e.preventDefault();
+    playBtn.click();
+  }
+});
+</script>
+</body>
+</html>

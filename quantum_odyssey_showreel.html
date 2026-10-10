@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>QUANTUM METRIC // 时空度规与量子引力 (60FPS HTML REEL)</title>
+<style>
+:root {
+  --bg: #030508;
+  --panel: #090d14;
+  --panel-border: #162030;
+  --white: #f0f4fc;
+  --muted: #748398;
+  --cyan: #00f0ff;
+  --cyan-glow: rgba(0, 240, 255, 0.4);
+  --hazard: #ff3e00;
+  --hazard-glow: rgba(255, 62, 0, 0.4);
+  --gold: #ffbe2e;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  background: var(--bg); color: var(--white);
+  font-family: ui-monospace, "SF Mono", Menlo, "Roboto Mono", "PingFang SC", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  align-items: center;
+  gap: 24px;
+  padding: 24px;
+  min-height: 100vh;
+}
+@media (max-width: 1080px) {
+  body {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
+    overflow-y: auto;
+    padding: 16px;
+  }
+}
+
+/* Video Frame Container */
+.reel-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+.reel {
+  height: min(92vh, 920px);
+  aspect-ratio: 9 / 16;
+  background: #020305;
+  border: 1px solid var(--panel-border);
+  overflow: hidden;
+  position: relative;
+  border-radius: 12px;
+  box-shadow: 0 25px 90px rgba(0, 0, 0, 0.95), 0 0 50px rgba(0, 240, 255, 0.15);
+  transition: aspect-ratio 0.3s ease, height 0.3s ease;
+}
+.reel.wide {
+  aspect-ratio: 16 / 9;
+  height: min(75vh, 680px);
+}
+.reel canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.reel #depth {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.reel #screen {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Control Aside */
+.controls {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 14px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+  z-index: 10;
+}
+.controls h1 {
+  font-size: 15px;
+  font-weight: 750;
+  letter-spacing: 1.2px;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.controls h1::before {
+  content: "";
+  display: inline-block;
+  width: 8px; height: 8px;
+  background: var(--cyan);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--cyan);
+}
+.controls p.desc {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+button {
+  background: #111824;
+  color: var(--white);
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  padding: 9px 14px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+button:hover {
+  background: #192436;
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+button.primary {
+  background: var(--cyan);
+  color: #030508;
+  border-color: var(--cyan);
+  font-weight: 750;
+  flex: 1;
+}
+button.primary:hover {
+  background: #4df5ff;
+  box-shadow: 0 0 16px var(--cyan-glow);
+}
+button.active {
+  background: rgba(0, 240, 255, 0.15);
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+.timeline-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.timeline-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--muted);
+}
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--cyan);
+  cursor: pointer;
+}
+
+.shots-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.shots-grid button {
+  padding: 7px 4px;
+  font-size: 10px;
+  text-align: center;
+}
+
+.shortcuts {
+  font-size: 10px;
+  color: var(--muted);
+  border-top: 1px solid var(--panel-border);
+  padding-top: 12px;
+  line-height: 1.6;
+}
+.badge-tag {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  background: rgba(0, 240, 255, 0.12);
+  color: var(--cyan);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  margin-left: auto;
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+<div class="reel-wrapper">
+  <div class="reel" id="reel-box">
+    <canvas id="depth"></canvas>
+    <canvas id="screen" width="1080" height="1920"></canvas>
+  </div>
+</div>
+
+<aside class="controls">
+  <div class="row">
+    <h1>QUANTUM METRIC</h1>
+    <span class="badge-tag">OPUS // GEMINI 4</span>
+  </div>
+  <p class="desc">
+    时空度规与量子引力学术图版 · 纯代码实时渲染 (60FPS) · 内置程序化声学引擎 · 纯函数式确定性时间轴。
+  </p>
+
+  <div class="row">
+    <button class="primary" id="btn-play">▶ 播放</button>
+    <button id="btn-audio">♪ 声效: 开</button>
+  </div>
+
+  <div class="timeline-wrap">
+    <div class="timeline-header">
+      <span id="time-now">00:00.00</span>
+      <span>00:20.00</span>
+    </div>
+    <input type="range" id="seek" min="0" max="20" step="0.01" value="0">
+  </div>
+
+  <div class="shots-grid">
+    <button data-jump="0">01 涨落</button>
+    <button data-jump="1">02 度规</button>
+    <button data-jump="2">03 纠缠</button>
+    <button data-jump="3">04 视界</button>
+    <button data-jump="4">05 坍缩</button>
+    <button data-jump="5">06 归档</button>
+  </div>
+
+  <div class="row">
+    <button id="btn-ratio" style="flex:1;">比例: 9:16 (竖屏)</button>
+    <button id="btn-full">⛶ 全屏</button>
+  </div>
+
+  <div class="shortcuts">
+    快捷键：<strong>Space</strong> 播放/暂停 · <strong>← / →</strong> ±1秒 · <strong>[ / ]</strong> 切镜头 · <strong>H</strong> 隐藏控制台
+  </div>
+</aside>
+
+<script>
+'use strict';
+
+// =========================================================================
+// 1. 核心时间轴与镜头注册 (Timeline & Acts)
+// =========================================================================
+const D = 20.0; // 总时长 20 秒
+const CUTS = [0.0, 3.2, 6.5, 10.0, 13.5, 17.0, 20.0];
+const SHOT_NAMES = ["01 / FLUCTUATION", "02 / METRIC", "03 / ENTANGLEMENT", "04 / HORIZON", "05 / COLLAPSE", "06 / ARCHIVE"];
+
+const C = {
+  bg: '#030508',
+  white: '#F0F4FC',
+  muted: '#748398',
+  cyan: '#00F0FF',
+  hazard: '#FF3E00',
+  gold: '#FFBE2E',
+  edge: '#162030'
+};
+
+// =========================================================================
+// 2. 运动学数学函数库 (Kinematics & Easing)
+// =========================================================================
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const lerp = (a, b, t) => a + (b - a) * t;
+const smoothstep = (a, b, x) => {
+  const t = clamp((x - a) / (b - a));
+  return t * t * (3 - 2 * t);
+};
+const ease = {
+  outExpo: (t) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t),
+  inOutCubic: (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2,
+  outBack: (t) => { const c1 = 1.70158; const c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); }
+};
+const prog = (x, a, b, fn = ease.outExpo) => fn(clamp((x - a) / (b - a)));
+const pulse = (t, hit, dur = 0.12) => Math.max(0, 1 - Math.abs(t - hit) / dur);
+
+function stage(sec) {
+  let i = 0;
+  while (i < 5 && sec >= CUTS[i + 1]) i++;
+  return i;
+}
+
+// =========================================================================
+// 3. WebGL 3D 深度与程序化着色器 (Three.js #depth)
+// =========================================================================
+const depthCanvas = document.getElementById('depth');
+const renderer = new THREE.WebGLRenderer({ canvas: depthCanvas, antialias: false, alpha: false });
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+const scene = new THREE.Scene();
+const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+const fsSource = `
+  uniform float t;
+  uniform float u_shot;
+  uniform float u_cutT;
+  uniform vec2 u_res;
+  varying vec2 vUv;
+
+  #define PI 3.14159265359
+
+  // 伪随机哈希
+  float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+
+  void main() {
+    vec2 uv = (vUv - 0.5) * vec2(u_res.x / u_res.y, 1.0);
+    vec3 col = vec3(0.015, 0.022, 0.035);
+
+    // 1. 全局精密工程坐标网格
+    vec2 grid = abs(fract(uv * 18.0 - 0.5) - 0.5) / fwidth(uv * 18.0);
+    float gridLine = 1.0 - min(min(grid.x, grid.y), 1.0);
+    col += vec3(0.04, 0.09, 0.14) * gridLine * 0.45;
+
+    // 2. 镜头分场景渲染
+    if (u_shot == 0.0) {
+      // 01 / 真空涨落：中心脉冲辐射环 + 随机微观涨落
+      float r = length(uv);
+      float ripple = sin(r * 40.0 - u_cutT * 12.0) * exp(-r * 3.5);
+      col += vec3(0.0, 0.85, 1.0) * max(0.0, ripple) * 0.5;
+    }
+    else if (u_shot == 1.0) {
+      // 02 / 度规张量：引力透镜弯曲漏斗
+      float dist = length(uv);
+      vec2 warped = uv * (1.0 + 0.6 / (dist + 0.15));
+      vec2 wGrid = abs(fract(warped * 14.0 - 0.5) - 0.5) / fwidth(warped * 14.0);
+      float wLine = 1.0 - min(min(wGrid.x, wGrid.y), 1.0);
+      col += vec3(0.0, 0.95, 1.0) * wLine * 0.75 * exp(-dist * 1.8);
+    }
+    else if (u_shot == 2.0) {
+      // 03 / 量子纠缠：双极对撞光束与干涉条纹
+      float d1 = length(uv - vec2(-0.25, 0.0));
+      float d2 = length(uv - vec2(0.25, 0.0));
+      float inter = cos(d1 * 45.0 - u_cutT * 15.0) * cos(d2 * 45.0 - u_cutT * 15.0);
+      col += vec3(0.0, 0.8, 1.0) * max(0.0, inter) * 0.4;
+      col += vec3(1.0, 0.25, 0.0) * exp(-d1 * 14.0) * 1.2;
+      col += vec3(0.0, 0.9, 1.0) * exp(-d2 * 14.0) * 1.2;
+    }
+    else if (u_shot == 3.0) {
+      // 04 / 事件视界：吸积盘光环与视界黑洞
+      float r = length(uv);
+      float ring = exp(-abs(r - 0.32) * 28.0);
+      float photon = exp(-abs(r - 0.28) * 60.0);
+      col += vec3(1.0, 0.45, 0.0) * ring * 1.1;
+      col += vec3(1.0, 0.9, 0.7) * photon * 1.8;
+      if (r < 0.26) col *= 0.05; // 绝对黑视界
+    }
+    else if (u_shot == 4.0) {
+      // 05 / 奇点坍缩：全屏冲击波扩散
+      float r = length(uv);
+      float shock = exp(-abs(r - u_cutT * 0.9) * 18.0);
+      col += vec3(0.0, 0.95, 1.0) * shock * 1.5;
+    }
+    else {
+      // 06 / 归档定格：回缩几何标尺
+      float r = length(uv);
+      col += vec3(0.0, 0.8, 1.0) * exp(-r * 4.0) * 0.3;
+    }
+
+    // 3. CRT 扫描线与暗角
+    float scan = sin(vUv.y * 1080.0 * 2.0) * 0.04;
+    col -= scan;
+    float vig = smoothstep(0.95, 0.35, length(vUv - 0.5));
+    col *= vig;
+
+    gl_FragColor = vec4(col, 1.0);
+  }
+`;
+
+const material = new THREE.ShaderMaterial({
+  vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position, 1.0); }`,
+  fragmentShader: fsSource,
+  uniforms: {
+    t: { value: 0 },
+    u_shot: { value: 0 },
+    u_cutT: { value: 0 },
+    u_res: { value: new THREE.Vector2(1080, 1920) }
+  }
+});
+scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material));
+
+function resizeDepth() {
+  const rect = depthCanvas.getBoundingClientRect();
+  renderer.setSize(rect.width, rect.height, false);
+  material.uniforms.u_res.value.set(rect.width, rect.height);
+}
+window.addEventListener('resize', resizeDepth);
+resizeDepth();
+
+// =========================================================================
+// 4. Canvas2D 动态排印与矢量渲染引擎 (#screen)
+// =========================================================================
+const screenCanvas = document.getElementById('screen');
+const ctx = screenCanvas.getContext('2d');
+const W = 1080, H = 1920;
+
+function line(x1, y1, x2, y2, color = C.edge, width = 2, alpha = 1) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.beginPath();
+  ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function assembleText(str, u, start, size, y, color = C.white, fitWidth = 740) {
+  ctx.save();
+  ctx.font = `750 ${size}px "PingFang SC", sans-serif`;
+  const chars = [...str];
+  const totalW = chars.reduce((sum, ch) => sum + ctx.measureText(ch).width, 0);
+  const fit = Math.min(1, fitWidth / Math.max(1, totalW));
+  ctx.translate(540, y);
+  ctx.scale(fit, 1);
+  let curX = -totalW / 2;
+  chars.forEach((ch, i) => {
+    const cw = ctx.measureText(ch).width;
+    const p = prog(u, start + i * 0.08, start + i * 0.08 + 0.45, ease.outBack);
+    ctx.save();
+    ctx.translate(curX + cw / 2, (1 - p) * (i % 2 ? 80 : -80));
+    ctx.rotate((1 - p) * (i % 2 ? 0.25 : -0.25));
+    ctx.globalAlpha = clamp(p);
+    ctx.fillStyle = color;
+    ctx.textAlign = 'center';
+    ctx.fillText(ch, 0, 0);
+    ctx.restore();
+    curX += cw;
+  });
+  ctx.restore();
+}
+
+function kineticSlam(str, u, start, size, y, color = C.white) {
+  if (u < start) return;
+  const p = prog(u, start, start + 0.35, ease.outExpo);
+  const scale = 1 + 0.18 * pulse(u, start, 0.08);
+  ctx.save();
+  ctx.translate(540, y);
+  ctx.scale(scale, scale);
+  ctx.font = `800 ${size}px "PingFang SC", sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = color;
+  ctx.globalAlpha = p;
+  ctx.fillText(str, 0, (1 - p) * 35);
+  ctx.restore();
+}
+
+function stampBox(str, u, start, y, color = C.cyan) {
+  if (u < start) return;
+  const p = prog(u, start, start + 0.28, ease.outExpo);
+  ctx.save();
+  ctx.translate(540, y);
+  ctx.rotate(-0.06 * (1 - p * 0.2));
+  ctx.scale(1 + 0.3 * (1 - p), 1 + 0.3 * (1 - p));
+  ctx.globalAlpha = p;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 5;
+  ctx.strokeRect(-240, -65, 480, 130);
+  ctx.fillStyle = color;
+  ctx.font = `800 64px "PingFang SC", sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(str, 0, 0);
+  ctx.restore();
+}
+
+function note(txt, y, color = C.muted) {
+  ctx.save();
+  ctx.font = `600 32px ui-monospace, SFMono-Regular, monospace`;
+  ctx.fillStyle = color;
+  ctx.textAlign = 'center';
+  ctx.fillText(txt, 540, y);
+  ctx.restore();
+}
+
+// 6 大分镜渲染器
+const shots = [
+  // Shot 1: 真空涨落
+  function(u) {
+    note("CASE: QUANTUM / 001 — VACUUM STATE", 310, C.muted);
+    kineticSlam("ħ = 1.054e-34", u, 0.1, 92, 530, C.white);
+    assembleText("真空零点能", u, 0.4, 110, 720, C.cyan);
+    note("量子涨落 · 虚粒子对创生与湮灭", 1380);
+    if (u > 1.6) note("ΔE · Δt ≥ ħ/2", 1440, C.gold);
+  },
+  // Shot 2: 度规张量
+  function(u) {
+    note("02 / SPACETIME CURVATURE", 310, C.muted);
+    kineticSlam("G_μν = 8πT_μν", u, 0.1, 88, 520, C.white);
+    assembleText("时空度规扭曲", u, 0.4, 105, 710, C.cyan);
+    note("质量弯曲空间 · 空间指导物体运动", 1380);
+    if (u > 1.5) note("ds² = g_μν dx^μ dx^ν", 1440, C.cyan);
+  },
+  // Shot 3: 量子纠缠
+  function(u) {
+    note("03 / NON-LOCAL COLLAPSE", 310, C.muted);
+    kineticSlam("EPR ENTANGLEMENT", u, 0.1, 78, 520, C.hazard);
+    assembleText("超距幽灵相互作用", u, 0.4, 96, 710, C.white);
+    stampBox("BELL VIOLATION", u, 1.4, 1080, C.hazard);
+    note("波函数瞬时协同坍缩", 1380);
+  },
+  // Shot 4: 事件视界
+  function(u) {
+    note("04 / GRAVITATIONAL HORIZON", 310, C.muted);
+    kineticSlam("r_s = 2GM / c²", u, 0.1, 86, 520, C.white);
+    assembleText("光子层与事件视界", u, 0.4, 102, 710, C.cyan);
+    note("引力时间膨胀 · dt/dτ → ∞", 1380);
+    if (u > 1.6) note("光线无法逃逸的临界界面", 1440, C.muted);
+  },
+  // Shot 5: 奇点爆发
+  function(u) {
+    note("05 / SINGULARITY DETONATION", 310, C.hazard);
+    kineticSlam("METRIC BREAKDOWN", u, 0.1, 88, 520, C.hazard);
+    assembleText("量子引力统一", u, 0.35, 116, 720, C.white);
+    stampBox("PLANCK COLLAPSE", u, 1.2, 1080, C.cyan);
+    note("经典广义相对论在微观破缺", 1380);
+  },
+  // Shot 6: 归档定格
+  function(u) {
+    note("06 / FINAL OBSERVATION", 310, C.muted);
+    assembleText("量子宇宙", u, 0.1, 130, 520, C.white);
+    kineticSlam("Q.E.D.", u, 0.4, 88, 700, C.cyan);
+    stampBox("ARCHIVED", u, 1.1, 1050, C.cyan);
+    note("看见微观法则 · 理解终极真相", 1380);
+  }
+];
+
+function drawHUD(t) {
+  // 四角发丝级辅助刻度
+  const pad = 60, arm = 28;
+  ctx.save();
+  ctx.strokeStyle = 'rgba(240, 244, 252, 0.45)';
+  ctx.lineWidth = 2;
+  // 左上
+  ctx.beginPath(); ctx.moveTo(pad, pad + arm); ctx.lineTo(pad, pad); ctx.lineTo(pad + arm, pad); ctx.stroke();
+  // 右上
+  ctx.beginPath(); ctx.moveTo(W - pad - arm, pad); ctx.lineTo(W - pad, pad); ctx.lineTo(W - pad, pad + arm); ctx.stroke();
+  // 左下
+  ctx.beginPath(); ctx.moveTo(pad, H - pad - arm); ctx.lineTo(pad, H - pad); ctx.lineTo(pad + arm, H - pad); ctx.stroke();
+  // 右下
+  ctx.beginPath(); ctx.moveTo(W - pad - arm, H - pad); ctx.lineTo(W - pad, H - pad); ctx.lineTo(W - pad, H - pad - arm); ctx.stroke();
+
+  // 顶部中心时间码与镜头指示
+  ctx.font = `600 24px ui-monospace, monospace`;
+  ctx.fillStyle = C.muted;
+  ctx.textAlign = 'left';
+  ctx.fillText(`FRAME: ${String(Math.floor(t * 60)).padStart(5, '0')} // FPS: 60.0`, pad + 40, pad + 24);
+  ctx.textAlign = 'right';
+  ctx.fillText(SHOT_NAMES[stage(t)], W - pad - 40, pad + 24);
+
+  // 底部进度刻度条
+  const barY = H - 90, barW = 860, barX = 110;
+  line(barX, barY, barX + barW, barY, C.edge, 3);
+  line(barX, barY, barX + barW * (t / D), barY, C.cyan, 4);
+
+  ctx.restore();
+}
+
+function render(sec) {
+  const t = clamp(sec, 0, D);
+  const s = stage(t);
+  const u = t - CUTS[s];
+
+  // 1. 驱动 WebGL 3D 背景
+  material.uniforms.t.value = t;
+  material.uniforms.u_shot.value = s;
+  material.uniforms.u_cutT.value = u;
+  renderer.render(scene, camera);
+
+  // 2. 清空并绘制 2D 文字与微排印
+  ctx.clearRect(0, 0, W, H);
+  shots[s](u);
+  drawHUD(t);
+}
+
+// =========================================================================
+// 5. 内置程序化声学引擎 (Procedural Web Audio Synthesizer)
+// =========================================================================
+let audioCtx = null;
+let soundEnabled = true;
+
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}
+
+function playKick(time) {
+  if (!audioCtx || !soundEnabled) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.frequency.setValueAtTime(120, time);
+  osc.frequency.exponentialRampToValueAtTime(32, time + 0.12);
+  gain.gain.setValueAtTime(0.7, time);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + 0.18);
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start(time);
+  osc.stop(time + 0.18);
+}
+
+function playSnare(time) {
+  if (!audioCtx || !soundEnabled) return;
+  // 噪声打击
+  const bufferSize = audioCtx.sampleRate * 0.1;
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+  const noise = audioCtx.createBufferSource();
+  noise.buffer = buffer;
+  const gain = audioCtx.createGain();
+  gain.gain.setValueAtTime(0.35, time);
+  gain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
+  noise.connect(gain);
+  gain.connect(audioCtx.destination);
+  noise.start(time);
+}
+
+let lastBeat = -1;
+function updateProceduralAudio(t) {
+  if (!audioCtx || !soundEnabled) return;
+  const beatInterval = 0.5; // 120 BPM (0.5s 一拍)
+  const currentBeat = Math.floor(t / beatInterval);
+  if (currentBeat !== lastBeat) {
+    lastBeat = currentBeat;
+    const now = audioCtx.currentTime;
+    if (currentBeat % 2 === 0) {
+      playKick(now);
+    } else {
+      playSnare(now);
+    }
+  }
+}
+
+// =========================================================================
+// 6. 交互播放器控制逻辑 (Player Controller)
+// =========================================================================
+let t = 0;
+let playing = false;
+let lastRafTime = 0;
+const UI = {
+  playBtn: document.getElementById('btn-play'),
+  seek: document.getElementById('seek'),
+  timeNow: document.getElementById('time-now'),
+  reelBox: document.getElementById('reel-box'),
+  btnRatio: document.getElementById('btn-ratio'),
+  btnAudio: document.getElementById('btn-audio'),
+  btnFull: document.getElementById('btn-full')
+};
+
+function loop(now) {
+  if (!playing) return;
+  if (!lastRafTime) lastRafTime = now;
+  const dt = (now - lastRafTime) / 1000;
+  lastRafTime = now;
+
+  t += dt;
+  if (t >= D) {
+    t = 0; // 循环播放
+  }
+
+  updateProceduralAudio(t);
+  render(t);
+  updateUI();
+  requestAnimationFrame(loop);
+}
+
+function updateUI() {
+  UI.seek.value = t;
+  const sec = Math.floor(t);
+  const msec = Math.floor((t - sec) * 100);
+  UI.timeNow.textContent = `00:${String(sec).padStart(2, '0')}.${String(msec).padStart(2, '0')}`;
+  const s = stage(t);
+  document.querySelectorAll('[data-jump]').forEach(b => {
+    b.classList.toggle('active', +b.dataset.jump === s);
+  });
+}
+
+function togglePlay() {
+  initAudio();
+  playing = !playing;
+  if (playing) {
+    lastRafTime = 0;
+    UI.playBtn.textContent = 'Ⅱ 暂停';
+    requestAnimationFrame(loop);
+  } else {
+    UI.playBtn.textContent = '▶ 播放';
+  }
+}
+
+function seek(sec) {
+  t = clamp(sec, 0, D);
+  render(t);
+  updateUI();
+}
+
+UI.playBtn.addEventListener('click', togglePlay);
+UI.seek.addEventListener('input', (e) => seek(parseFloat(e.target.value)));
+document.querySelectorAll('[data-jump]').forEach(b => {
+  b.addEventListener('click', () => seek(CUTS[+b.dataset.jump]));
+});
+
+UI.btnRatio.addEventListener('click', () => {
+  UI.reelBox.classList.toggle('wide');
+  const isWide = UI.reelBox.classList.contains('wide');
+  UI.btnRatio.textContent = isWide ? '比例: 16:9 (横屏)' : '比例: 9:16 (竖屏)';
+  setTimeout(() => { resizeDepth(); render(t); }, 320);
+});
+
+UI.btnAudio.addEventListener('click', () => {
+  initAudio();
+  soundEnabled = !soundEnabled;
+  UI.btnAudio.textContent = soundEnabled ? '♪ 声效: 开' : '♪ 声效: 关';
+});
+
+UI.btnFull.addEventListener('click', () => {
+  if (!document.fullscreenElement) {
+    UI.reelBox.requestFullscreen().catch(()=>{});
+  } else {
+    document.exitFullscreen().catch(()=>{});
+  }
+});
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+  if (e.key === 'ArrowRight') seek(t + (e.shiftKey ? 3 : 0.5));
+  if (e.key === 'ArrowLeft') seek(t - (e.shiftKey ? 3 : 0.5));
+  if (e.key === '[') {
+    const s = Math.max(0, stage(t) - 1);
+    seek(CUTS[s]);
+  }
+  if (e.key === ']') {
+    const s = Math.min(5, stage(t) + 1);
+    seek(CUTS[s]);
+  }
+  if (e.key.toLowerCase() === 'h') {
+    document.querySelector('.controls').style.display =
+      document.querySelector('.controls').style.display === 'none' ? 'flex' : 'none';
+  }
+});
+
+// 首帧确定性初始化
+render(0);
+updateUI();
+</script>
+</body>
+</html>

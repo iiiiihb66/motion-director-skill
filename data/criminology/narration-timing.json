@@ -1,0 +1,66 @@
+[
+  {
+    "id": "intro",
+    "start": 0.1,
+    "end": 3.6763,
+    "text": "案件编号零七九。现场警戒，物证封锁。",
+    "source_duration": 3.57625,
+    "tempo": 1
+  },
+  {
+    "id": "uv",
+    "start": 4.3,
+    "end": 6.9362,
+    "text": "紫外光下，微量物证，正在显影。",
+    "source_duration": 2.636208,
+    "tempo": 1
+  },
+  {
+    "id": "path",
+    "start": 8.3,
+    "end": 11.3008,
+    "text": "指纹回路，弹道膛线。重建轨迹。",
+    "source_duration": 3.000792,
+    "tempo": 1
+  },
+  {
+    "id": "exchange",
+    "start": 12.7,
+    "end": 15.746,
+    "text": "洛卡德交换定律。接触，留下痕迹。",
+    "source_duration": 3.046,
+    "tempo": 1
+  },
+  {
+    "id": "profile",
+    "start": 17.2,
+    "end": 20.2043,
+    "text": "行为侧写，动机解构。连接线索。",
+    "source_duration": 3.004292,
+    "tempo": 1
+  },
+  {
+    "id": "outline",
+    "start": 21.1,
+    "end": 23.4771,
+    "text": "无声的证据，拼出事件的轮廓。",
+    "source_duration": 2.377125,
+    "tempo": 1
+  },
+  {
+    "id": "title",
+    "start": 25.0,
+    "end": 26.2741,
+    "text": "这里是，犯罪学。",
+    "source_duration": 1.274083,
+    "tempo": 1
+  },
+  {
+    "id": "end",
+    "start": 28.8,
+    "end": 31.4266,
+    "text": "真相永不泯灭。结案，归档。",
+    "source_duration": 2.626583,
+    "tempo": 1
+  }
+]

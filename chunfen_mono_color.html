@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>春分 · SPRING EQUINOX — Mono-Color Motion Director</title>
+  <style>
+    :root {
+      --bg-color: #0c0f0d;
+      --paper-color: #F4F1E8;
+      --ink-green: #008A4B;
+      --ink-terracotta: #C65F38;
+      --ink-charcoal: #232725;
+      --accent-yellow: #E8B931;
+      --panel-bg: rgba(20, 24, 21, 0.85);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: #e5e8e5;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* 9:16 视口容器 */
+    .app-viewport {
+      position: relative;
+      width: min(90vh * (9 / 16), 96vw);
+      height: min(90vh, 96vw * (16 / 9));
+      background: var(--paper-color);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .canvas-stack {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    #depth-canvas {
+      z-index: 1;
+    }
+
+    #screen-canvas {
+      z-index: 2;
+    }
+
+    /* 控制面板Aside */
+    .controls-panel {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 24px);
+      z-index: 10;
+      background: var(--panel-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .controls-panel.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 15px);
+    }
+
+    .controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .btn {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .btn-primary {
+      background: var(--ink-terracotta);
+      border-color: var(--ink-terracotta);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #d8714a;
+    }
+
+    .time-display {
+      font-family: "SF Mono", "Menlo", Monaco, monospace;
+      font-size: 12px;
+      color: #a0aab0;
+      letter-spacing: 0.5px;
+    }
+
+    .seekbar-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      height: 4px;
+      -webkit-appearance: none;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--ink-terracotta);
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.3);
+    }
+
+    .shots-nav {
+      display: flex;
+      gap: 4px;
+    }
+
+    .shot-btn {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #ccc;
+      border: none;
+      cursor: pointer;
+    }
+
+    .shot-btn.active {
+      background: var(--ink-green);
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .hint-bar {
+      font-size: 10px;
+      color: #727e77;
+      text-align: center;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-viewport">
+    <div class="canvas-stack">
+      <!-- 底层 Canvas: 绘制 Risograph 纸张与 Halftone 网点 Shader 粒子 -->
+      <canvas id="depth-canvas" width="1080" height="1920"></canvas>
+      <!-- 顶层 Canvas: 绘制瑞士双色排印、燕子线条与动态印章 -->
+      <canvas id="screen-canvas" width="1080" height="1920"></canvas>
+    </div>
+
+    <!-- 控制面板 Aside -->
+    <div class="controls-panel" id="controls">
+      <div class="controls-row">
+        <button class="btn btn-primary" id="btn-play">
+          <span id="play-icon">▶</span> <span id="play-text">播放</span>
+        </button>
+        <div class="time-display" id="time-display">00.00s / 10.00s</div>
+        <div class="shots-nav">
+          <button class="shot-btn" data-shot="0">幕1</button>
+          <button class="shot-btn" data-shot="1">幕2</button>
+          <button class="shot-btn" data-shot="2">幕3</button>
+          <button class="shot-btn" data-shot="3">幕4</button>
+        </div>
+      </div>
+      <div class="seekbar-container">
+        <input type="range" id="seekbar" min="0" max="1000" value="0" step="1">
+      </div>
+      <div class="hint-bar">
+        快捷键: [Space] 播放/暂停 | [←/→] 微调 | [1-4] 切换镜头 | [H] 隐藏UI
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // === CONSTANTS & CONFIG ===
+    const DURATION = 10.0; // 10s 全长
+    const SHOTS = [0, 2.5, 5.5, 8.0, 10.0];
+    const WIDTH = 1080;
+    const HEIGHT = 1920;
+
+    // Mono-Color Duotone 色板（符合 mono-color 技能规范）
+    const PALETTE = {
+      paper: '#F4F1E8',      // 柔和中性底纸 Pale Beige
+      green: '#008A4B',      // 主色 75%: 墨绿 Botanical Green
+      terracotta: '#C65F38', // 辅色 25%: 陶土橙 Terracotta Orange
+      charcoal: '#232725',   // 炭黑 Charcoal
+      lightPaper: '#FAFAF7'
+    };
+
+    // DOM References
+    const depthCanvas = document.getElementById('depth-canvas');
+    const screenCanvas = document.getElementById('screen-canvas');
+    const dctx = depthCanvas.getContext('2d');
+    const sctx = screenCanvas.getContext('2d');
+
+    const btnPlay = document.getElementById('btn-play');
+    const playIcon = document.getElementById('play-icon');
+    const playText = document.getElementById('play-text');
+    const seekbar = document.getElementById('seekbar');
+    const timeDisplay = document.getElementById('time-display');
+    const controlsPanel = document.getElementById('controls');
+    const shotBtns = document.querySelectorAll('.shot-btn');
+
+    // State
+    let currentTime = 0;
+    let isPlaying = false;
+    let lastFrameTimestamp = 0;
+    let audioCtx = null;
+
+    // === 确定性纯时间数学库 ===
+    const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+    const lerp = (a, b, t) => a + (b - a) * t;
+    const smoothstep = (a, b, x) => {
+      const t = clamp((x - a) / (b - a));
+      return t * t * (3 - 2 * t);
+    };
+
+    const ease = {
+      outExpo: (t) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t),
+      inOutCubic: (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2,
+      outBack: (t) => {
+        const c1 = 1.70158;
+        const c3 = c1 + 1;
+        return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+      }
+    };
+
+    const prog = (x, a, b, fn = ease.outExpo) => fn(clamp((x - a) / (b - a)));
+
+    // 伪随机哈希 (带种子确定性)
+    function hash12(p) {
+      let h = Math.sin(p * 12.9898 + p * 78.233) * 43758.5453;
+      return h - Math.floor(h);
+    }
+
+    // === Web Audio 程序化声效（春分律动音效）===
+    function initAudio() {
+      if (audioCtx) return;
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      } catch(e){}
+    }
+
+    function triggerSoundEffect(time) {
+      if (!audioCtx || audioCtx.state !== 'running') return;
+      
+      // 检查关键卡点拍子 trigger chime
+      if (Math.abs(time - 0.05) < 0.04 || Math.abs(time - 2.5) < 0.04 || Math.abs(time - 5.5) < 0.04 || Math.abs(time - 8.0) < 0.04) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(time > 7.5 ? 880 : (time > 4.5 ? 659.25 : 523.25), audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.6);
+      }
+    }
+
+    // === 渲染管线 ===
+    function render(sec) {
+      const t = clamp(sec, 0, DURATION);
+      
+      // 确定当前幕 (Shot Index)
+      let shotIdx = 0;
+      for (let i = 0; i < SHOTS.length - 1; i++) {
+        if (t >= SHOTS[i]) shotIdx = i;
+      }
+      const u = t - SHOTS[shotIdx]; // 当前幕局部时间
+
+      // 1. 渲染底层 Risograph 纸张与 Halftone 网点 (Depth Canvas)
+      renderDepthLayer(t, shotIdx, u);
+
+      // 2. 渲染顶层 瑞士排印与矢量动效 (Screen Canvas)
+      renderScreenLayer(t, shotIdx, u);
+
+      // 更新 UI 按钮与进度条
+      seekbar.value = Math.round((t / DURATION) * 1000);
+      timeDisplay.textContent = `${t.toFixed(2)}s / ${DURATION.toFixed(2)}s`;
+      
+      shotBtns.forEach((btn, idx) => {
+        btn.classList.toggle('active', idx === shotIdx);
+      });
+    }
+
+    // --- 底层：Risograph 质感 & Halftone 半色调网点 ---
+    function renderDepthLayer(t, s, u) {
+      dctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+      // 底纸背景
+      dctx.fillStyle = PALETTE.paper;
+      dctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+      // 模拟 Risograph 纸张纸质颗粒 (Paper Texture Fiber)
+      dctx.save();
+      dctx.globalAlpha = 0.04;
+      for (let i = 0; i < 120; i++) {
+        const rx = hash12(i * 1.1) * WIDTH;
+        const ry = hash12(i * 2.3) * HEIGHT;
+        const rw = hash12(i * 3.7) * 40 + 5;
+        dctx.fillStyle = i % 2 === 0 ? PALETTE.green : PALETTE.terracotta;
+        dctx.fillRect(rx, ry, rw, 1.5);
+      }
+      dctx.restore();
+
+      // 半色调网点背景阵列 (Halftone Dot Matrix)
+      dctx.save();
+      const dotSpacing = 36;
+      const cols = Math.ceil(WIDTH / dotSpacing);
+      const rows = Math.ceil(HEIGHT / dotSpacing);
+
+      // 动态网点波纹（对应春分昼夜平衡交替）
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const x = c * dotSpacing + 18;
+          const y = r * dotSpacing + 18;
+
+          // 计算网点半径随时间和位置的波幅 (0° 太阳黄经轨道)
+          const distToCenter = Math.hypot(x - WIDTH / 2, y - HEIGHT * 0.45);
+          const angle = Math.atan2(y - HEIGHT * 0.45, x - WIDTH / 2);
+          
+          let radius = 2.5;
+          
+          // 阴阳割昏晓：根据角度和时间产生网点疏密演变
+          const wave = Math.sin(angle * 2 + t * 1.5 - distToCenter * 0.003);
+          radius += wave * 2.2;
+
+          if (radius > 0.5) {
+            dctx.beginPath();
+            dctx.arc(x, y, Math.max(0.5, radius), 0, Math.PI * 2);
+            // 双色交替：网点展现陶土橙与植物绿双色印刷
+            if ((c + r) % 5 === 0) {
+              dctx.fillStyle = PALETTE.terracotta;
+              dctx.globalAlpha = 0.22;
+            } else {
+              dctx.fillStyle = PALETTE.green;
+              dctx.globalAlpha = 0.12;
+            }
+            dctx.fill();
+          }
+        }
+      }
+      dctx.restore();
+    }
+
+    // --- 顶层：瑞士排印、双色矢量与镜头组 ---
+    function renderScreenLayer(t, s, u) {
+      sctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+      // 绘制全局 Swiss Grid 网格辅助线与版式留白边界
+      drawGlobalSwissGrid(t);
+
+      // 根据当前幕执行镜头动效
+      if (s === 0) {
+        shot1_EquinoxSlam(u, t);
+      } else if (s === 1) {
+        shot2_SwallowFlight(u, t);
+      } else if (s === 2) {
+        shot3_DayNightEquilibrium(u, t);
+      } else if (s === 3) {
+        shot4_StampArchival(u, t);
+      }
+    }
+
+    // === 辅助组件 1: 瑞士网格与 35% 留白框 ===
+    function drawGlobalSwissGrid(t) {
+      sctx.save();
+      sctx.strokeStyle = PALETTE.green;
+      sctx.lineWidth = 1;
+      sctx.globalAlpha = 0.15;
+
+      // 外边距 7% (75px)
+      const margin = 75;
+      sctx.strokeRect(margin, margin, WIDTH - margin * 2, HEIGHT - margin * 2);
+
+      // 微排印 HUD 标尺
+      sctx.fillStyle = PALETTE.charcoal;
+      sctx.font = '600 16px "SF Mono", monospace';
+      sctx.globalAlpha = 0.45;
+      sctx.fillText(`SOLAR TERM: 04 / CHUNFEN`, margin + 10, margin - 15);
+      sctx.fillText(`RA: 00h 00m 00s`, WIDTH - margin - 180, margin - 15);
+      sctx.fillText(`FPS: 60.0`, margin + 10, HEIGHT - margin + 30);
+      sctx.fillText(`9:16 REEL`, WIDTH - margin - 100, HEIGHT - margin + 30);
+
+      sctx.restore();
+    }
+
+    // === 幕 1 (0.0s - 2.5s): 砸字爆发 + 太阳黄经 0° ===
+    function shot1_EquinoxSlam(u, t) {
+      // 巨幅标题「春分」冲击碰撞
+      const p1 = prog(u, 0.1, 0.65, ease.outExpo);
+      const pText = prog(u, 0.4, 0.9, ease.outBack);
+
+      // 1. 太阳黄经 0° 极简圆环 (Terracotta Dual-plate)
+      sctx.save();
+      sctx.translate(WIDTH / 2, HEIGHT * 0.42);
+      const ringRadius = 260;
+      
+      // 黄经度圈
+      sctx.beginPath();
+      sctx.arc(0, 0, ringRadius, 0, Math.PI * 2);
+      sctx.strokeStyle = PALETTE.terracotta;
+      sctx.lineWidth = 8;
+      sctx.globalAlpha = clamp(p1);
+      sctx.stroke();
+
+      // 阴阳切分斜线
+      sctx.beginPath();
+      const lineAngle = Math.PI * 0.25 + (1 - p1) * 0.5;
+      sctx.moveTo(-Math.cos(lineAngle) * ringRadius, -Math.sin(lineAngle) * ringRadius);
+      sctx.lineTo(Math.cos(lineAngle) * ringRadius, Math.sin(lineAngle) * ringRadius);
+      sctx.strokeStyle = PALETTE.green;
+      sctx.lineWidth = 4;
+      sctx.stroke();
+
+      sctx.restore();
+
+      // 2. 巨型主字「春分」错相砸字 (Dramatic Scale Jump: 220px)
+      sctx.save();
+      sctx.font = '900 220px "PingFang SC", "Hiragino Sans GB", sans-serif';
+      sctx.textAlign = 'center';
+      sctx.textBaseline = 'middle';
+
+      // 错相色版：绿色层与陶土橙层双色套印微移
+      const shiftX = (1 - p1) * 35;
+      
+      // 绿版 (Dominant Plate 75%)
+      sctx.fillStyle = PALETTE.green;
+      sctx.globalAlpha = clamp(p1 * 0.95);
+      sctx.fillText('春分', WIDTH / 2 - shiftX, HEIGHT * 0.42 - 10);
+
+      // 陶土橙版 (Accent Plate 25% Overprint)
+      sctx.fillStyle = PALETTE.terracotta;
+      sctx.globalAlpha = clamp(p1 * 0.8);
+      sctx.fillText('春分', WIDTH / 2 + shiftX, HEIGHT * 0.42 + 10);
+
+      sctx.restore();
+
+      // 3. 微排印英文与节气注释
+      sctx.save();
+      sctx.font = '700 36px "SF Pro Display", sans-serif';
+      sctx.fillStyle = PALETTE.charcoal;
+      sctx.textAlign = 'center';
+      sctx.globalAlpha = clamp(pText);
+      sctx.fillText('SPRING EQUINOX', WIDTH / 2, HEIGHT * 0.62);
+
+      sctx.font = '500 24px "PingFang SC", sans-serif';
+      sctx.fillStyle = PALETTE.green;
+      sctx.fillText('— 太阳到达黄经 0° · 昼夜平分 —', WIDTH / 2, HEIGHT * 0.67);
+      sctx.restore();
+    }
+
+    // === 幕 2 (2.5s - 5.5s): 玄鸟飞跃 + 双色碰撞 ===
+    function shot2_SwallowFlight(u, t) {
+      // 1. 玄鸟（燕子）矢量轨迹 - 曲线运动
+      const startX = -100;
+      const endX = WIDTH + 100;
+      const posX = lerp(startX, endX, prog(u, 0.2, 2.6, ease.inOutCubic));
+      const posY = HEIGHT * 0.35 + Math.sin(u * 3) * 120;
+
+      // 绘制燕子飞翔矢量 (Risograph 风格双色)
+      sctx.save();
+      sctx.translate(posX, posY);
+      sctx.rotate(Math.cos(u * 3) * 0.25 - 0.2);
+
+      const wingFlap = Math.sin(u * 18) * 30;
+
+      // 绘制燕子剪影
+      sctx.beginPath();
+      sctx.moveTo(60, 0); // 鸟喙
+      sctx.quadraticCurveTo(10, -20 - wingFlap, -40, -80 - wingFlap); // 左翼
+      sctx.lineTo(-20, -10);
+      sctx.lineTo(-80, 50); // 剪尾左
+      sctx.lineTo(-40, 0);  // 尾分叉
+      sctx.lineTo(-80, -50); // 剪尾右
+      sctx.lineTo(-20, 10);
+      sctx.quadraticCurveTo(10, 20 + wingFlap, -40, 80 + wingFlap); // 右翼
+      sctx.closePath();
+
+      sctx.fillStyle = PALETTE.green;
+      sctx.fill();
+      
+      // 复制套印线 border
+      sctx.strokeStyle = PALETTE.terracotta;
+      sctx.lineWidth = 3;
+      sctx.stroke();
+
+      sctx.restore();
+
+      // 2. 背景文字排版「玄鸟至 · 雷乃发声 · 桃始华」
+      sctx.save();
+      const phrases = ['玄鸟至', '雷乃发声', '桃始华'];
+      sctx.font = '800 84px "PingFang SC", sans-serif';
+      sctx.textAlign = 'left';
+
+      phrases.forEach((phrase, i) => {
+        const pLine = prog(u, 0.4 + i * 0.4, 0.9 + i * 0.4, ease.outExpo);
+        const yPos = HEIGHT * 0.52 + i * 110;
+        
+        // 绿字与橙色印章小框
+        sctx.fillStyle = PALETTE.green;
+        sctx.globalAlpha = clamp(pLine);
+        sctx.fillText(phrase, 120, yPos);
+
+        // 序号标记
+        sctx.font = '700 24px "SF Mono", monospace';
+        sctx.fillStyle = PALETTE.terracotta;
+        sctx.fillText(`0${i + 1}`, 75, yPos - 30);
+      });
+
+      sctx.restore();
+    }
+
+    // === 幕 3 (5.5s - 8.0s): 昼夜均分 · 03.20 极简数字 ===
+    function shot3_DayNightEquilibrium(u, t) {
+      const pScale = prog(u, 0.1, 0.8, ease.outExpo);
+
+      // 1. 巨大背景日期数字「03.20」(5-12倍阶梯字号: 320px)
+      sctx.save();
+      sctx.font = '900 320px "SF Pro Display", sans-serif';
+      sctx.textAlign = 'center';
+      sctx.textBaseline = 'middle';
+      sctx.fillStyle = PALETTE.terracotta;
+      sctx.globalAlpha = clamp(pScale * 0.15); // 作为纹理底色
+      sctx.fillText('03.20', WIDTH / 2, HEIGHT * 0.40);
+      sctx.restore();
+
+      // 2. 阴阳平分圆盘 (Day = 12h, Night = 12h)
+      sctx.save();
+      sctx.translate(WIDTH / 2, HEIGHT * 0.42);
+      sctx.scale(pScale, pScale);
+
+      // 左半圆：白昼 (Botanical Green)
+      sctx.beginPath();
+      sctx.arc(0, 0, 180, Math.PI * 0.5, Math.PI * 1.5);
+      sctx.fillStyle = PALETTE.green;
+      sctx.fill();
+
+      // 右半圆：黑夜 (Terracotta)
+      sctx.beginPath();
+      sctx.arc(0, 0, 180, Math.PI * 1.5, Math.PI * 0.5);
+      sctx.fillStyle = PALETTE.terracotta;
+      sctx.fill();
+
+      // 中间分割线与平衡点
+      sctx.beginPath();
+      sctx.arc(0, -90, 90, 0, Math.PI * 2);
+      sctx.fillStyle = PALETTE.green;
+      sctx.fill();
+
+      sctx.beginPath();
+      sctx.arc(0, 90, 90, 0, Math.PI * 2);
+      sctx.fillStyle = PALETTE.terracotta;
+      sctx.fill();
+
+      sctx.restore();
+
+      // 3. 底部文字说明
+      sctx.save();
+      sctx.font = '800 52px "PingFang SC", sans-serif';
+      sctx.fillStyle = PALETTE.charcoal;
+      sctx.textAlign = 'center';
+      sctx.globalAlpha = clamp(prog(u, 0.5, 1.0, ease.outExpo));
+      sctx.fillText('昼夜均分 · 寒暑平', WIDTH / 2, HEIGHT * 0.72);
+
+      sctx.font = '500 24px "SF Mono", monospace';
+      sctx.fillStyle = PALETTE.terracotta;
+      sctx.fillText('DAYLIGHT 12H : NIGHT 12H', WIDTH / 2, HEIGHT * 0.77);
+      sctx.restore();
+    }
+
+    // === 幕 4 (8.0s - 10.0s): 春分归档 · 红色砸印章收束 ===
+    function shot4_StampArchival(u, t) {
+      // 继承底色
+      sctx.save();
+      sctx.font = '900 160px "PingFang SC", sans-serif';
+      sctx.textAlign = 'center';
+      sctx.fillStyle = PALETTE.green;
+      sctx.fillText('春分', WIDTH / 2, HEIGHT * 0.38);
+
+      sctx.font = '600 32px "SF Pro Display", monospace';
+      sctx.fillStyle = PALETTE.charcoal;
+      sctx.fillText('VERNAL EQUINOX 2026', WIDTH / 2, HEIGHT * 0.46);
+      sctx.restore();
+
+      // 砸盖印章 (Rubber Stamp)
+      const pStamp = prog(u, 0.2, 0.6, ease.outBack);
+      if (u >= 0.2) {
+        sctx.save();
+        sctx.translate(WIDTH / 2, HEIGHT * 0.62);
+        sctx.rotate(-0.08 * (1 - pStamp));
+        sctx.scale(1 + 0.35 * (1 - pStamp), 1 + 0.35 * (1 - pStamp));
+        sctx.globalAlpha = clamp(pStamp);
+
+        // 边框
+        sctx.strokeStyle = PALETTE.terracotta;
+        sctx.lineWidth = 8;
+        sctx.strokeRect(-180, -60, 360, 120);
+
+        // 印章文本
+        sctx.fillStyle = PALETTE.terracotta;
+        sctx.font = '800 56px "PingFang SC", sans-serif';
+        sctx.textAlign = 'center';
+        sctx.textBaseline = 'middle';
+        sctx.fillText('莫负春光', 0, 0);
+
+        sctx.restore();
+      }
+    }
+
+    // === 播放控制逻辑 ===
+    function play() {
+      if (currentTime >= DURATION) currentTime = 0;
+      isPlaying = true;
+      playIcon.textContent = '⏸';
+      playText.textContent = '暂停';
+      lastFrameTimestamp = performance.now();
+      initAudio();
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      requestAnimationFrame(loop);
+    }
+
+    function pause() {
+      isPlaying = false;
+      playIcon.textContent = '▶';
+      playText.textContent = '播放';
+    }
+
+    function seek(sec) {
+      currentTime = clamp(sec, 0, DURATION);
+      render(currentTime);
+      triggerSoundEffect(currentTime);
+    }
+
+    function loop(timestamp) {
+      if (!isPlaying) return;
+      const delta = (timestamp - lastFrameTimestamp) / 1000;
+      lastFrameTimestamp = timestamp;
+
+      currentTime += delta;
+      if (currentTime >= DURATION) {
+        currentTime = DURATION;
+        render(currentTime);
+        pause();
+        return;
+      }
+
+      render(currentTime);
+      triggerSoundEffect(currentTime);
+      requestAnimationFrame(loop);
+    }
+
+    // === EVENT LISTENERS ===
+    btnPlay.addEventListener('click', () => {
+      if (isPlaying) pause();
+      else play();
+    });
+
+    seekbar.addEventListener('input', (e) => {
+      pause();
+      const sec = (parseInt(e.target.value) / 1000) * DURATION;
+      seek(sec);
+    });
+
+    shotBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.shot);
+        seek(SHOTS[idx]);
+      });
+    });
+
+    // 快捷键绑定
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (isPlaying) pause();
+        else play();
+      } else if (e.code === 'ArrowLeft') {
+        pause();
+        seek(currentTime - 0.1);
+      } else if (e.code === 'ArrowRight') {
+        pause();
+        seek(currentTime + 0.1);
+      } else if (e.key === 'h' || e.key === 'H') {
+        controlsPanel.classList.toggle('hidden');
+      } else if (e.key >= '1' && e.key <= '4') {
+        const idx = parseInt(e.key) - 1;
+        if (idx < SHOTS.length - 1) seek(SHOTS[idx]);
+      }
+    });
+
+    // 初始首帧渲染
+    render(0);
+  </script>
+</body>
+</html>

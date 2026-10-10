@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>αβΓ✻1 (ABG ONE) — QUANT MASTERPIECE (THREE.JS SHOWCASE)</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #080706; height: 100%; overflow: hidden; font-family: ui-monospace, Menlo, system-ui, -apple-system, sans-serif; }
+  #stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+  #stage canvas { height: 100vh; max-width: 100vw; aspect-ratio: 9/16; }
+  
+  /* HUD Overlay System */
+  #hud-top { position: fixed; top: 24px; left: 0; right: 0; pointer-events: none; z-index: 10; display: flex; justify-content: center; }
+  #hud-top .in { width: min(90vw, 540px); display: flex; justify-content: space-between; font-size: 12px; color: #8a8580; letter-spacing: 2px; }
+  #hud-top .tag { color: #ff4d12; font-weight: 700; }
+  
+  #hud-bottom { position: fixed; bottom: 85px; left: 0; right: 0; pointer-events: none; z-index: 10; display: flex; justify-content: center; padding: 0 20px; }
+  #hud-bottom .caption { max-width: min(90vw, 560px); text-align: center; font-size: 20px; font-weight: 800; color: #f5f3ed; text-shadow: 0 0 20px rgba(255, 77, 18, 0.6); letter-spacing: 1px; }
+  
+  /* Player Bar Controls */
+  #ui { position: fixed; left: 0; right: 0; bottom: 0; padding: 16px 24px 22px; pointer-events: none; background: linear-gradient(to top, rgba(8,7,6,0.9), transparent); z-index: 20; }
+  #bar { height: 4px; background: #2a2724; border-radius: 2px; overflow: hidden; pointer-events: auto; cursor: pointer; }
+  #fill { height: 100%; width: 0%; background: #ff4d12; transition: width 0.05s linear; }
+  #row { display: flex; justify-content: space-between; margin-top: 10px; color: #8a8580; font-size: 12px; letter-spacing: 1.5px; }
+  
+  /* Big Start Overlay */
+  #play { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(8,7,6,0.85); z-index: 30; cursor: pointer; }
+  #play .btn { border: 2px solid #ff4d12; color: #f5f3ed; background: rgba(255, 77, 18, 0.15); font-size: 22px; font-weight: 700; letter-spacing: 4px; padding: 18px 48px; border-radius: 4px; box-shadow: 0 0 30px rgba(255,77,18,0.4); }
+  #play .sub { margin-top: 14px; text-align: center; color: #8a8580; font-size: 12px; letter-spacing: 2px; }
+</style>
+</head>
+<body>
+<div id="version-nav" style="position:fixed;top:18px;right:22px;z-index:9999;pointer-events:auto;background:rgba(18,17,16,0.9);backdrop-filter:blur(8px);border:1px solid #383028;border-radius:8px;padding:6px 10px;font-family:sans-serif;">
+  <span style="font-size:11px;color:#d4af37;font-weight:bold;margin-right:6px;">🔀 ABG ONE 版本切换:</span>
+  <select onchange="if(this.value) window.location.href=this.value;" style="background:#201c18;color:#f1f3e9;border:1px solid #4a3e30;padding:4px 8px;border-radius:6px;font-size:12px;cursor:pointer;outline:none;">
+    <option value="/assets/getabg-promo.html">版本 1: 24s 9:16 瑞士数据风 (社媒推荐)</option>
+    <option value="/abg_one_opus55_trailer.html">版本 2: 30s 16:9 3D 影院剪辑版</option>
+    <option value="/abg_one_masterpiece.html" selected>✓ 版本 3: 黑胶量化概念版 (Noir Quant)</option>
+  </select>
+</div>
+
+<div id="stage"></div>
+
+<!-- Top HUD Bar -->
+<div id="hud-top">
+  <div class="in">
+    <div id="hud-scene">ACT I / THE UNCERTAINTY</div>
+    <div class="tag" id="hud-tag">αβΓ✻1 NOIR MASTERPIECE</div>
+  </div>
+</div>
+
+<!-- Caption Subtitle -->
+<div id="hud-bottom">
+  <div class="caption" id="hud-caption">95% 的期权新手，败给看不懂的趋势。</div>
+</div>
+
+<!-- Player Bar -->
+<div id="ui">
+  <div id="bar"><div id="fill"></div></div>
+  <div id="row">
+    <span>αβΓ✻1 · QUANT MASTERPIECE SHOWCASE</span>
+    <span id="tc">00.0 / 30.0</span>
+  </div>
+</div>
+
+<!-- Start Overlay Button -->
+<div id="play">
+  <div>
+    <div class="btn">▶&nbsp;开启震撼体验</div>
+    <div class="sub">30 秒 · 建议开启音量</div>
+  </div>
+</div>
+
+<!-- Three.js + Base64 Audio Engine Script -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+'use strict';
+
+/* ============ 确定性随机与数学函数 (mulberry32) ============ */
+function mulberry32(a) {
+  return function() {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    var t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+const R = mulberry32(20261004);
+const BEAT = 0.5;
+const beatPhase = t => (t % BEAT) / BEAT;
+const beatPulse = t => Math.pow(1 - beatPhase(t), 3);
+const clamp01 = v => Math.max(0, Math.min(1, v));
+const easeIO = v => v < .5 ? 2 * v * v : 1 - Math.pow(-2 * v + 2, 2) / 2;
+const easeOut = v => 1 - Math.pow(1 - v, 3);
+const springOver = v => Math.sin(v * Math.PI * 1.2) * 1.1;
+
+/* ============ 颜色与主题 (Quant Noir Masterpiece) ============ */
+const BG = 0x080706;
+const SIGNAL = 0xff4d12;
+const BONE = 0xf5f3ed;
+const ASH = 0x8a8580;
+const TEAL = 0x00ffc3;
+
+/* ============ 渲染器 / 场景 / 相机 ============ */
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+renderer.setSize(1080, 1920);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.outputEncoding = THREE.sRGBEncoding;
+document.getElementById('stage').appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(BG);
+scene.fog = new THREE.Fog(BG, 15, 65);
+
+const camera = new THREE.PerspectiveCamera(50, 1080 / 1920, 0.1, 200);
+scene.add(camera);
+
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+scene.add(ambientLight);
+
+const pointLight = new THREE.PointLight(SIGNAL, 1.5, 60);
+pointLight.position.set(5, 8, 10);
+scene.add(pointLight);
+
+/* ============ 全局橙色发光星尘粒子库 ============ */
+const PN = 1800;
+const pgeo = new THREE.BufferGeometry();
+const pos = new Float32Array(PN * 3);
+for (let i = 0; i < PN; i++) {
+  pos[i * 3 + 0] = (R() - 0.5) * 80;
+  pos[i * 3 + 1] = (R() - 0.5) * 50;
+  pos[i * 3 + 2] = (R() - 0.5) * 80;
+}
+pgeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+const pmat = new THREE.PointsMaterial({
+  color: SIGNAL,
+  size: 0.18,
+  transparent: true,
+  opacity: 0.75,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false
+});
+const dustParticles = new THREE.Points(pgeo, pmat);
+scene.add(dustParticles);
+
+/* 3D 底部高精度标尺网格 */
+const grid = new THREE.GridHelper(80, 40, 0x3a3835, 0x1a1816);
+grid.position.y = -7;
+grid.material.transparent = true;
+grid.material.opacity = 0.45;
+scene.add(grid);
+
+/* ============ 高清 Canvas 2D 文本纹理生成器 ============ */
+function textPlane(text, opt) {
+  opt = opt || {};
+  const size = opt.size || 110;
+  const color = opt.color || '#f5f3ed';
+  const glow = opt.glow || null;
+  const fontStr = '900 ' + size + 'px ui-monospace, Menlo, "PingFang SC", sans-serif';
+  let w = opt.w || 1024;
+  const h = opt.h || Math.ceil(size * 1.8);
+  
+  const meas = document.createElement('canvas').getContext('2d');
+  meas.font = fontStr;
+  const tw = meas.measureText(text).width;
+  if (tw > w - 60) w = Math.ceil(tw + 120);
+
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const x = c.getContext('2d');
+  x.font = fontStr;
+  x.textAlign = 'center';
+  x.textBaseline = 'middle';
+  if (glow) { x.shadowColor = glow; x.shadowBlur = opt.blur || 30; }
+  x.fillStyle = color;
+  x.fillText(text, w / 2, h / 2 + size * 0.05);
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.anisotropy = 4;
+  const ph = opt.ph || 2.2, pw = ph * w / h;
+  const m = new THREE.Mesh(
+    new THREE.PlaneGeometry(pw, ph),
+    new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false })
+  );
+  m.userData.redraw = (fn) => {
+    const xx = c.getContext('2d');
+    xx.clearRect(0, 0, w, h);
+    fn(xx, w, h);
+    tex.needsUpdate = true;
+  };
+  return m;
+}
+
+function mkGroup() {
+  const g = new THREE.Group();
+  g.visible = false;
+  scene.add(g);
+  return g;
+}
+
+/* ============ 7 个错相震撼分镜 (ACT I - ACT VII) ============ */
+const TL = [
+  { start: 0.0, end: 3.8, title: 'ACT I / THE UNCERTAINTY', tag: 'PRICE ACTION', caption: '95% 的期权新手，败给看不懂的趋势。' },
+  { start: 3.8, end: 7.5, title: 'ACT II / REALIZED RISK', tag: 'RISK FORENSICS', caption: '以 αβΓ✻1 开局，在真实模拟中看清损益。' },
+  { start: 7.5, end: 11.5, title: 'ACT III / PAYOFF TOPOGRAPHY', tag: 'STRATEGY PAYOFF', caption: '可视化 Iron Condor & Vertical Spread 盈亏平点。' },
+  { start: 11.5, end: 15.5, title: 'ACT IV / THE GREEKS ENGINE', tag: 'GREEKS RADAR', caption: 'Δ 捕捉方向，Γ 测量加速，Θ 掌控时间，ν 预警波动。' },
+  { start: 15.5, end: 19.5, title: 'ACT V / DECISION REVIEW', tag: 'ATTRIBUTION ENGINE', caption: '记录每一笔交易决策，深度归因复盘。' },
+  { start: 19.5, end: 23.5, title: 'ACT VI / LOGO SLAM', tag: 'ALL-IN-ONE WORKSPACE', caption: 'αβΓ✻1 —— 你的全能期权实战工作台。' },
+  { start: 23.5, end: 30.0, title: 'ACT VII / THE PORTAL', tag: 'GET STARTED NOW', caption: '即刻访问 getabg.one，解锁专业视角。' }
+];
+
+/* ---- ACT I: K线趋势与思考 ---- */
+const s1 = (() => {
+  const g = mkGroup();
+  const candles = [];
+  for (let i = 0; i < 32; i++) {
+    const h = 0.6 + R() * 3.4;
+    const up = R() > 0.45;
+    const m = new THREE.Mesh(
+      new THREE.BoxGeometry(0.55, 1, 0.55),
+      new THREE.MeshBasicMaterial({ color: up ? BONE : SIGNAL })
+    );
+    m.position.set(-13.5 + i * 0.9, -6 + 0.5, -4 - (R() * 6));
+    m.scale.y = 0.001;
+    m.userData = { h, i };
+    g.add(m);
+    candles.push(m);
+  }
+  const title = textPlane('判断，还是感觉？', { size: 140, glow: '#ff4d12', blur: 35, ph: 2.2 });
+  title.position.set(0, 3.2, -8);
+  g.add(title);
+  return {
+    g,
+    update(lt, t) {
+      candles.forEach(c => {
+        const p = clamp01((lt - c.userData.i * 0.08) / 0.5);
+        c.scale.y = Math.max(0.001, c.userData.h * easeOut(p));
+        c.position.y = -6 + c.scale.y / 2;
+      });
+      title.position.y = 3.2 + Math.sin(t * 1.5) * 0.1;
+      const e = easeIO(clamp01(lt / 4.5));
+      camera.position.set(0, 1.5, 17 - 7 * e);
+      camera.lookAt(0, -1.5, -4);
+    }
+  };
+})();
+
+/* ---- ACT II: PnL 亏损数字滚动 ---- */
+const s2 = (() => {
+  const g = mkGroup();
+  const num = textPlane('', { size: 180, glow: '#ff4d12', blur: 40, ph: 1.6, w: 1400, h: 340 });
+  num.position.set(0, 1.2, -5);
+  g.add(num);
+  const tag = textPlane('REALIZED PNL // 风险蔓延', { size: 52, color: '#8a8580', w: 1024, h: 100, ph: 1.0 });
+  tag.position.set(0, 3.4, -5);
+  g.add(tag);
+  
+  const start = 1240, end = 8660;
+  function drawNum(v) {
+    num.userData.redraw((x, w, h) => {
+      x.font = '900 180px ui-monospace, Menlo, sans-serif';
+      x.textAlign = 'center'; x.textBaseline = 'middle';
+      x.shadowColor = '#ff4d12'; x.shadowBlur = 40;
+      x.fillStyle = '#ff4d12';
+      x.fillText('−¥' + v.toLocaleString('en-US'), w / 2, h / 2 + 8);
+    });
+  }
+  drawNum(start);
+  return {
+    g,
+    update(lt, t) {
+      const step = Math.floor(lt / BEAT);
+      const total = Math.floor(3.2 / BEAT);
+      const v = Math.floor(start + (end - start) * easeOut(clamp01(step / total)));
+      drawNum(v);
+      const jp = beatPulse(t);
+      const s = 1 + 0.05 * jp;
+      num.scale.set(s, s, 1);
+      const a = t * 0.35;
+      camera.position.set(Math.sin(a) * 5.5, 1.6, 11);
+      camera.lookAt(0, 1.2, -5);
+    }
+  };
+})();
+
+/* ---- ACT III: Payoff 辉光 CatmullRom 管道 ---- */
+const s3 = (() => {
+  const g = mkGroup();
+  const curve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(-7, -2.5, 0),
+    new THREE.Vector3(-2.5, -2.5, 0),
+    new THREE.Vector3(0.5, -1, 0),
+    new THREE.Vector3(3.5, 2, -1),
+    new THREE.Vector3(7, 4, -2)
+  ]);
+  const SEG = 72, RAD = 10;
+  const tgeo = new THREE.TubeGeometry(curve, SEG, 0.12, RAD, false);
+  const tube = new THREE.Mesh(tgeo, new THREE.MeshBasicMaterial({ color: SIGNAL }));
+  g.add(tube);
+
+  const idxCount = SEG * RAD * 6;
+  const strike = new THREE.Mesh(
+    new THREE.BoxGeometry(0.06, 5, 0.06),
+    new THREE.MeshBasicMaterial({ color: BONE, transparent: true, opacity: 0.4 })
+  );
+  strike.position.set(0.5, 0.5, 0);
+  g.add(strike);
+
+  const kl = textPlane('K · 行权价与损益边界', { size: 52, color: '#8a8580', w: 1024, h: 110, ph: 1.1 });
+  kl.position.set(0.5, -3.4, 0);
+  g.add(kl);
+
+  const head = new THREE.Mesh(
+    new THREE.SphereGeometry(0.24, 16, 16),
+    new THREE.MeshBasicMaterial({ color: 0xffd9c4 })
+  );
+  g.add(head);
+
+  return {
+    g,
+    update(lt, t) {
+      const segNow = Math.min(SEG, Math.floor(lt / BEAT) * 9 + 1);
+      tgeo.setDrawRange(0, Math.min(idxCount, segNow * RAD * 6));
+      const p = clamp01(lt / 3.6);
+      const pt = curve.getPoint(Math.min(0.985, p));
+      head.position.copy(pt);
+      const jp = beatPulse(t);
+      const s = 1 + 0.5 * jp;
+      head.scale.set(s, s, s);
+      strike.material.opacity = 0.3 + 0.25 * jp;
+      const e = easeIO(clamp01(lt / 4));
+      camera.position.set(Math.sin(t * 0.4) * 1.2, 2.2, 19 - 3 * e);
+      camera.lookAt(0, 0.2, -0.5);
+    }
+  };
+})();
+
+/* ---- ACT IV: 全息 3D 仪表盘 ---- */
+const s4 = (() => {
+  const g = mkGroup();
+  const dial = new THREE.Group();
+  dial.position.set(0, 1.2, -4);
+  dial.scale.setScalar(0.85);
+  g.add(dial);
+
+  const ring = new THREE.Mesh(
+    new THREE.TorusGeometry(3.1, 0.07, 12, 72),
+    new THREE.MeshBasicMaterial({ color: BONE })
+  );
+  dial.add(ring);
+
+  for (let i = 0; i <= 12; i++) {
+    const a = Math.PI * 0.75 - i * (Math.PI * 1.5 / 12);
+    const tick = new THREE.Mesh(
+      new THREE.BoxGeometry(0.09, i % 3 === 0 ? 0.55 : 0.3, 0.09),
+      new THREE.MeshBasicMaterial({ color: i % 3 === 0 ? SIGNAL : BONE })
+    );
+    tick.position.set(Math.cos(a) * 3.1, Math.sin(a) * 3.1, 0);
+    tick.rotation.z = a - Math.PI / 2;
+    dial.add(tick);
+  }
+
+  const needle = new THREE.Mesh(
+    new THREE.BoxGeometry(0.12, 2.7, 0.12),
+    new THREE.MeshBasicMaterial({ color: SIGNAL })
+  );
+  needle.geometry.translate(0, 1.15, 0);
+  dial.add(needle);
+
+  const hub = new THREE.Mesh(
+    new THREE.SphereGeometry(0.22, 16, 16),
+    new THREE.MeshBasicMaterial({ color: BONE })
+  );
+  dial.add(hub);
+
+  const num = textPlane('×50 杠杆倍率', { size: 160, glow: '#ff4d12', blur: 34, ph: 2.0 });
+  num.position.set(0, -2.8, -4);
+  g.add(num);
+
+  return {
+    g,
+    update(lt, t) {
+      const step = Math.floor(lt / BEAT);
+      const a = Math.PI * 0.75 - clamp01(step / 8) * (Math.PI * 1.5);
+      needle.rotation.z = a - Math.PI / 2;
+      camera.position.set(Math.sin(t * 0.5) * 3, 2.0, 12);
+      camera.lookAt(0, 0.6, -4);
+      num.scale.setScalar(1 + 0.04 * beatPulse(t));
+    }
+  };
+})();
+
+/* ---- ACT V: 决策复盘时间轴 ---- */
+const s5 = (() => {
+  const g = mkGroup();
+  const lineGeo = new THREE.BoxGeometry(24, 0.07, 0.07);
+  const tline = new THREE.Mesh(lineGeo, new THREE.MeshBasicMaterial({ color: 0x8a8580 }));
+  tline.position.set(0, 0, -3);
+  g.add(tline);
+
+  const labels = ['D1', 'D2', 'D3', 'D4', 'D5'];
+  const posts = [];
+  labels.forEach((lb, i) => {
+    const x = -9.6 + i * 4.8;
+    const post = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.09, 0.09, 2.2, 10),
+      new THREE.MeshBasicMaterial({ color: BONE })
+    );
+    post.position.set(x, 1.1, -3);
+    g.add(post);
+
+    const dot = new THREE.Mesh(
+      new THREE.SphereGeometry(0.3, 14, 14),
+      new THREE.MeshBasicMaterial({ color: SIGNAL })
+    );
+    dot.position.set(x, 2.8, -3);
+    dot.visible = false;
+    g.add(dot);
+
+    const tag = textPlane(lb, { size: 60, color: '#f5f3ed', w: 512, h: 140, ph: 0.9 });
+    tag.position.set(x, 3.8, -3);
+    g.add(tag);
+
+    posts.push({ dot, x });
+  });
+
+  const cursor = new THREE.Mesh(
+    new THREE.SphereGeometry(0.34, 16, 16),
+    new THREE.MeshBasicMaterial({ color: 0xffd9c4 })
+  );
+  g.add(cursor);
+
+  return {
+    g,
+    update(lt, t) {
+      const pi = Math.min(4, Math.floor(lt / BEAT));
+      posts.forEach((p, i) => { p.dot.visible = i <= pi; });
+      const cx = posts[pi].x;
+      cursor.position.set(cx, 0, -3);
+      const s = 1 + 0.4 * beatPulse(t);
+      cursor.scale.set(s, s, s);
+      const e = easeIO(clamp01(lt / 4));
+      const dx = -10 + 20 * e;
+      camera.position.set(dx, 6, 16);
+      camera.lookAt(dx + 1, 0.5, -3);
+    }
+  };
+})();
+
+/* ---- ACT VI: ABG ONE 字符 Slam 砸落 ---- */
+const s6 = (() => {
+  const g = mkGroup();
+  const letters = [];
+  'ABG'.split('').forEach((ch, i) => {
+    const m = textPlane(ch, { size: 340, glow: '#ff4d12', blur: 44, ph: 2.2, w: 700, h: 560 });
+    m.position.set((i - 1) * 2.3, 2.2, -6);
+    m.visible = false;
+    g.add(m);
+    letters.push({ m, at: i * 0.5 });
+  });
+  'ONE'.split('').forEach((ch, i) => {
+    const m = textPlane(ch, { size: 340, glow: '#ff4d12', blur: 44, ph: 2.2, w: 700, h: 560 });
+    m.position.set((i - 1) * 2.3, -1.6, -6);
+    m.visible = false;
+    g.add(m);
+    letters.push({ m, at: 1.5 + i * 0.5 });
+  });
+
+  const items = [['01 学习 · 期权结构', -4.2], ['02 模拟 · 策略回测', -5.4], ['03 复盘 · 决策记录', -6.6]];
+  const rows = items.map(([txt, y]) => {
+    const m = textPlane(txt, { size: 64, color: '#f5f3ed', w: 1400, h: 130, ph: 1.15 });
+    m.position.set(0, y, -4);
+    m.visible = false;
+    g.add(m);
+    return m;
+  });
+
+  return {
+    g,
+    update(lt, t) {
+      letters.forEach(({ m, at }) => {
+        const lp = (lt - at) / 0.3;
+        m.visible = lp > 0;
+        if (m.visible) {
+          const e = easeOut(clamp01(lp));
+          const s = 1.7 - 0.7 * e;
+          m.scale.set(s, s, 1);
+          m.material.opacity = clamp01(lp * 2);
+        }
+      });
+      rows.forEach((m, i) => { m.visible = lt > 2.2 + i * 0.4; });
+      const jp = beatPulse(t);
+      camera.position.set(Math.sin(t * 0.6) * 1.6, 0.4 + Math.sin(t * 0.9) * 0.25, 11.5 - 1.2 * easeIO(clamp01(lt / 4.5)) + jp * 0.25);
+      camera.lookAt(0, 0.4, -6);
+    }
+  };
+})();
+
+/* ---- ACT VII: getabg.one 官方入口 ---- */
+const s7 = (() => {
+  const g = mkGroup();
+  const free = textPlane('免费使用', { size: 150, color: '#f5f3ed', w: 1400, h: 260, ph: 1.8 });
+  free.position.set(0, 3.4, -6);
+  g.add(free);
+
+  const url = textPlane('getabg.one', { size: 200, color: '#ff4d12', glow: '#ff4d12', blur: 50, ph: 1.5, w: 1600, h: 340 });
+  url.position.set(0, 0.4, -6);
+  g.add(url);
+
+  const stamp = textPlane('FREE', { size: 130, color: '#ff4d12', w: 800, h: 260, ph: 1.9 });
+  stamp.position.set(1.8, -2.6, -4);
+  stamp.rotation.z = -0.21;
+  const stampBox = new THREE.Group();
+  stampBox.add(stamp);
+  g.add(stampBox);
+
+  const feats = textPlane('期权学习 · 模拟 · 复盘', { size: 56, color: '#8a8580', w: 1400, h: 120, ph: 1.0 });
+  feats.position.set(0, -2.9, -5);
+  g.add(feats);
+
+  return {
+    g,
+    update(lt, t) {
+      const e = easeOut(clamp01(lt / 0.7)), s = 1.5 - 0.5 * e;
+      free.scale.set(s, s, 1);
+      free.material.opacity = clamp01(lt / 0.4);
+
+      const e2 = easeOut(clamp01((lt - 0.5) / 0.7)), s2 = 1.5 - 0.5 * e2;
+      url.scale.set(s2, s2, 1);
+      url.material.opacity = clamp01((lt - 0.5) / 0.4);
+
+      const se = easeOut(clamp01((lt - 1.6) / 0.35)), ss = 1.8 - 0.8 * se;
+      stampBox.scale.set(ss, ss, 1);
+      stampBox.visible = lt > 1.55;
+
+      const jp = beatPulse(t);
+      camera.position.set(0, 0.6, 11 + 6 * easeIO(clamp01(lt / 4.5)));
+      camera.lookAt(0, 0.2, -6);
+      dustParticles.rotation.y = t * 0.03 + jp * 0.02;
+    }
+  };
+})();
+
+const SCENES = [s1, s2, s3, s4, s5, s6, s7];
+
+/* ============ 全局时间更新控制 ============ */
+let curIdx = -1;
+function update(t) {
+  t = Math.max(0, Math.min(29.999, t));
+  let idx = TL.findIndex(s => t >= s.start && t < s.end);
+  if (idx < 0) idx = 6;
+  const lt = t - TL[idx].start;
+  
+  if (idx !== curIdx) {
+    SCENES.forEach((s, i) => { s.g.visible = (i === idx); });
+    document.getElementById('hud-scene').textContent = TL[idx].title;
+    document.getElementById('hud-tag').textContent = TL[idx].tag;
+    document.getElementById('hud-caption').textContent = TL[idx].caption;
+    curIdx = idx;
+  }
+  
+  SCENES[idx].update(lt, t);
+  dustParticles.rotation.y = t * 0.015;
+  pmat.size = 0.18 * (1 + 0.35 * beatPulse(t));
+  renderer.render(scene, camera);
+}
+
+/* ============ 音频与手势播放控制 ============ */
+const audio = new Audio('/audio/abg.mp3');
+audio.preload = 'auto';
+
+const fill = document.getElementById('fill');
+const tc = document.getElementById('tc');
+const bar = document.getElementById('bar');
+const playOv = document.getElementById('play');
+let playing = false, rafId = null;
+
+function loop() {
+  const t = audio.currentTime;
+  if (t >= 29.95 || audio.ended) { stop(); return; }
+  update(t);
+  fill.style.width = (t / 30 * 100) + '%';
+  tc.textContent = t.toFixed(1).padStart(4, '0') + ' / 30.0';
+  rafId = requestAnimationFrame(loop);
+}
+
+function stop() {
+  playing = false;
+  cancelAnimationFrame(rafId);
+  playOv.style.display = 'flex';
+}
+
+document.getElementById('play').addEventListener('click', () => {
+  playOv.style.display = 'none';
+  playing = true;
+  audio.currentTime = 0;
+  audio.play().catch(() => { playOv.style.display = 'flex'; });
+  rafId = requestAnimationFrame(loop);
+});
+
+bar.addEventListener('click', (e) => {
+  const r = bar.getBoundingClientRect();
+  const f = clamp01((e.clientX - r.left) / r.width);
+  audio.currentTime = f * 29.9;
+  if (!playing) { update(audio.currentTime); }
+});
+
+update(0);
+</script>
+</body>
+</html>

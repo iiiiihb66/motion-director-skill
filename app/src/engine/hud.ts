@@ -86,7 +86,7 @@ export interface HudState {
 export class Hud {
   layer = new Layer2D();
   private ink = false;
-  constructor(public pdoom: PDoom, public captions: Caption[]) {}
+  constructor(public pdoom: PDoom, public captions: Caption[], public lyrics?: Lyrics) {}
 
   draw(t: number, st: HudState) {
     const L = this.layer;
@@ -98,6 +98,7 @@ export class Hud {
     if (st.frame > 0.001) this.cropMarks(c, st.frame);
     if (st.readout > 0.001) { c.save(); c.globalAlpha *= st.readout; this.readout(c, t, st); c.restore(); }
     this.caption(c, t);
+    this.subtitles(c, t);
     return L.upload();
   }
 
@@ -171,6 +172,84 @@ export class Hud {
     c.letterSpacing = '3px';
     c.fillStyle = this.ink ? rgba('blood', 1) : rgba('signal', 1);
     c.fillText(cap.fig, x - full, y - 34);
+    c.restore();
+  }
+
+  private subtitles(c: CanvasRenderingContext2D, t: number) {
+    if (!this.lyrics) return;
+    const line = this.lyrics.lines.find((l) => t >= l.start - 0.2 && t <= l.end + 0.5);
+    if (!line) return;
+
+    const fadeIn = smoothstep(line.start - 0.2, line.start + 0.15, t);
+    const fadeOut = 1 - smoothstep(line.end - 0.1, line.end + 0.5, t);
+    const alpha = clamp(fadeIn * fadeOut, 0, 1);
+    if (alpha <= 0.01) return;
+
+    c.save();
+    c.globalAlpha *= alpha;
+
+    const fontSize = 32;
+    c.font = font(F.mono(600), fontSize);
+    c.textBaseline = 'middle';
+    c.textAlign = 'left';
+
+    const words = line.words;
+    let totalW = 0;
+    const wordWidths: number[] = [];
+    const wordSpacings: number[] = [];
+
+    for (let i = 0; i < words.length; i++) {
+      const w = words[i]!;
+      const mw = c.measureText(w.w).width;
+      const space = i < words.length - 1 ? 14 : 0;
+      wordWidths.push(mw);
+      wordSpacings.push(space);
+      totalW += mw + space;
+    }
+
+    const centerX = W / 2;
+    const centerY = H - 65;
+    const padX = 26;
+    const padY = 12;
+    const boxW = Math.max(280, totalW + padX * 2);
+    const boxH = fontSize + padY * 2;
+    const boxX = centerX - boxW / 2;
+    const boxY = centerY - boxH / 2;
+
+    // Dark sleek capsule pill background
+    c.fillStyle = this.ink ? 'rgba(240, 236, 228, 0.92)' : 'rgba(6, 10, 16, 0.85)';
+    c.strokeStyle = this.ink ? 'rgba(16, 20, 24, 0.25)' : 'rgba(255, 255, 255, 0.18)';
+    c.lineWidth = 1.5;
+
+    c.beginPath();
+    c.roundRect(boxX, boxY, boxW, boxH, 10);
+    c.fill();
+    c.stroke();
+
+    // Render words with word-level karaoke / highlight
+    let curX = centerX - totalW / 2;
+    for (let i = 0; i < words.length; i++) {
+      const w = words[i]!;
+      const mw = wordWidths[i]!;
+      const isCurrent = t >= w.start && t <= w.end;
+      const isPast = t > w.end;
+
+      if (isCurrent) {
+        c.fillStyle = this.ink ? '#D73A49' : '#FF5500';
+        c.shadowColor = this.ink ? 'transparent' : 'rgba(255, 85, 0, 0.65)';
+        c.shadowBlur = this.ink ? 0 : 14;
+      } else if (isPast) {
+        c.fillStyle = this.ink ? 'rgba(16, 20, 24, 0.95)' : 'rgba(235, 230, 220, 0.95)';
+        c.shadowBlur = 0;
+      } else {
+        c.fillStyle = this.ink ? 'rgba(16, 20, 24, 0.45)' : 'rgba(235, 230, 220, 0.55)';
+        c.shadowBlur = 0;
+      }
+
+      c.fillText(w.w, curX, centerY);
+      curX += mw + wordSpacings[i]!;
+    }
+
     c.restore();
   }
 }

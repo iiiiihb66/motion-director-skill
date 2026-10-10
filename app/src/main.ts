@@ -95,13 +95,25 @@ function setupExport() {
 
 // ------------------------------------------------------------------ preview player
 function setupPlayer() {
-  const audio = new Audio('audio/criminology.mp3');
+  const project = params.get('project') || params.get('p') || 'abg';
+  const audioFile = (project === 'criminology' || project === 'crim') ? '/audio/criminology.mp3' : '/audio/abg.mp3';
+  const audio = new Audio(audioFile);
   audio.preload = 'auto';
   const ui = document.getElementById('ui')!;
   const scrub = document.getElementById('scrub') as HTMLInputElement;
   const info = document.getElementById('info')!;
   const marks = document.getElementById('marks')!;
   const errs = document.getElementById('errs')!;
+  const projSelect = document.getElementById('projSelect') as HTMLSelectElement;
+  if (projSelect) {
+    projSelect.value = (project === 'criminology' || project === 'crim') ? 'criminology' : 'abg';
+    projSelect.onchange = () => {
+      const u = new URL(window.location.href);
+      u.searchParams.set('project', projSelect.value);
+      window.location.href = u.toString();
+    };
+  }
+
   scrub.max = String(engine.duration);
   scrub.step = '0.001';
   if (engine.errors.length) { errs.textContent = engine.errors.join('\n\n'); errs.style.display = 'block'; }

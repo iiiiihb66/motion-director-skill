@@ -37,7 +37,15 @@ export class Lyrics {
   }
 
   static async load(): Promise<Lyrics> {
-    for (const url of ['data/lyrics.json', 'data/lyrics.approx.json']) {
+    const params = new URLSearchParams(window.location.search);
+    let project = params.get('project') || params.get('p') || 'abg';
+    if (project === 'crim') project = 'criminology';
+    const urls = [
+      `data/${project}/lyrics.json`,
+      'data/lyrics.json',
+      'data/lyrics.approx.json'
+    ];
+    for (const url of urls) {
       const r = await fetch(url);
       if (r.ok && (r.headers.get('content-type') ?? '').includes('json')) return new Lyrics(await r.json());
     }

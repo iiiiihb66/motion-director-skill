@@ -1,0 +1,7 @@
+file '/Users/fuhongbo/Documents/Antigravity/motion-director-skill/odyssey-of-light/audio/act0_prologue.mp3'
+file '/Users/fuhongbo/Documents/Antigravity/motion-director-skill/odyssey-of-light/audio/act1_newton.mp3'
+file '/Users/fuhongbo/Documents/Antigravity/motion-director-skill/odyssey-of-light/audio/act2_young_poisson.mp3'
+file '/Users/fuhongbo/Documents/Antigravity/motion-director-skill/odyssey-of-light/audio/act3_maxwell.mp3'
+file '/Users/fuhongbo/Documents/Antigravity/motion-director-skill/odyssey-of-light/audio/act4_photoelectric.mp3'
+file '/Users/fuhongbo/Documents/Antigravity/motion-director-skill/odyssey-of-light/audio/act5_duality.mp3'
+file '/Users/fuhongbo/Documents/Antigravity/motion-director-skill/odyssey-of-light/audio/act6_epilogue.mp3'
