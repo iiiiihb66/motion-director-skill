@@ -1,116 +1,77 @@
-# I'm Upping My P(doom) — music video
+# motion-director-skill · 竖屏自媒体科技宣传片系统
 
-A generative, code-rendered music video with word-synced karaoke typography. Every frame is a deterministic function of song time, so the live preview in the browser and the offline 1080p60 (or 4K60) export are identical.
+给 coding agent 用的**竖屏 9:16 科技/金融类短视频**制作系统： deterministic（确定性）时间轴渲染 + 三段式验收 + 自媒体安全区排版。目标是一句话——**在手机上看起来像花钱做的宣传片**。
 
-**Watch it in 4K on YouTube:** https://www.youtube.com/watch?v=5EoO5413dBY
+## 这是什么 / 不是什么
 
-The YouTube upload is an earlier render: it averages only 4 sub-frames per frame for motion blur, so fast motion shows stepped copies, and YouTube's compression smears the film grain. For the best version, render it locally (see [Render the video](#render-the-video)): the current code picks up to 324 sub-frames per frame where the motion needs them.
+- **是**：一套"导演方法论 + 技法手册 + 参考库索引"，专攻竖屏 9:16 的科技感宣传片（产品发布、金融科普、AI 作品集）。
+- **不是**：通用动画 skill。艺术史风格、横屏解说动画请用 [huashu-art-motion](https://github.com/alchaincyf/huashu-art-motion)（35 种艺术风格 + 9 种解说语法，强烈推荐，互补不重叠）。
+- **底座**：渲染引擎与美学源自 [mexicat/pdoom-video](https://github.com/mexicat/pdoom-video)（黑橙 HUD 技术图纸风，MIT），本仓库基于其二次开发，见 [归属](#归属)。
 
-The video was made with Claude (Opus 5.5) in Claude Code: the concept and treatment, the lyric alignment and audio analysis, the renderer, every scene and the renders were all worked out in conversation with Claude.
-
-The song is not ours: see [Credits](#credits) for who wrote and made it.
-
-The concept, style bible and plate-by-plate treatment are in [`docs/TREATMENT.md`](docs/TREATMENT.md). The engine and scene API are documented in [`docs/ENGINE.md`](docs/ENGINE.md).
-
-## Layout
-
-- `audio/pdoom.mp3` — the song (the Claude-Pop version, see Credits).
-- `lyrics/lyrics.src.js` — the original line-level lyrics (approximate timings).
-- `analysis/` — Python (uv) tools that produced the timing data: Demucs stem separation, CTC forced alignment cross-checked with Whisper, beat/downbeat/onset analysis. See `analysis/align.py` and `analysis/analyze.py`.
-- `data/lyrics.json` — word-level (and some syllable-level) lyric timings.
-- `data/audio.json` — tempo (132.007 BPM), beats, downbeats, sections, drum/vocal onsets and loudness envelopes.
-- `app/` — the renderer: TypeScript + three.js, bun + Vite.
-  - `src/engine/` — renderer core: timeline playback, post-processing (bloom, halation, grain), typography (Archivo, IBM Plex Mono, Cormorant Garamond, single-stroke plotter fonts), GPU line batches, HUD.
-  - `src/scenes/` — one module per plate (`open`, `loss`, `prompt`, `hook`, `room`, `shoggoth`, `spacetime`, `ascent`, `bureau`, `leftturn`, `paperclips`, `fuse`, `stack`, `dense`, `loom`, `ilya`, `outro`) plus shared motifs.
-  - `src/timeline.ts` — the edit: scene windows anchored to lyric lines and snapped to the beat grid.
-  - `scripts/render.ts` — offline renderer (headless Chrome → raw frames over WebSocket → ffmpeg).
-- `out/` — renders (not in the repo).
-
-## Requirements
-
-[bun](https://bun.sh), Google Chrome (the offline renderer drives it headless through playwright-core) and ffmpeg with libx264. The analysis tools need [uv](https://docs.astral.sh/uv/); the renderer doesn't.
-
-## Preview
+## 安装（Claude Code）
 
 ```sh
-cd app
-bun install
-bunx vite
+# 方式一：直接复制为本地 skill
+git clone https://github.com/iiiiihb66/motion-director-skill.git
+cp -r motion-director-skill ~/.claude/skills/motion-director
+
+# 方式二：项目级（只对当前项目生效）
+cp -r motion-director-skill .claude/skills/motion-director
 ```
 
-Open http://localhost:5173 and use the keys below. `?t=23` starts at a given time.
+装完后在 Claude Code 里直接说"用 motion-director 做一条 9:16 宣传片"即可。
 
-| Key | Action |
+## 方法论（三件套）
+
+| 文件 | 作用 |
 |---|---|
-| space | play / pause |
-| ← / → | seek ±1 s (±5 s with shift) |
-| `,` / `.` | step one frame |
-| `[` / `]` | previous / next scene |
-| `l` | loop the current scene |
-| `h` | hide the UI |
+| `docs/SPEC.md` | **开工总纲**：setup 清单、三段式验收（brief → 最难 2–4 秒小样 → 全片）、量化打分（7 项 8 分过）、自媒体安全区 §K |
+| `SKILL.md` | **技法手册**：拍点网格、错相、物理写进代码、运动模糊、胶片颗粒、Reads 时间模型、动效时序数值表、禁止清单 |
+| `docs/REPOS.md` | **路线决策表**：12 个参考库索引（mexicat、JohnHeibel、hyperframes、Remotion、xilo-opus-video…），做什么任务走哪条路线 |
 
-The preview renders in real time on a recent Mac. The export is not real time and is heavier.
+另有 `docs/ENGINE.md` / `docs/TREATMENT.md`（mexicat 原版引擎与风格圣经）、`docs/PROMPT_LIBRARY.md`（提示词库）。
 
-## Render the video
+## 核心纪律（速览）
 
-```sh
-cd app
-bun scripts/render.ts video --samples auto --shutter 0.2 --out ../out/pdoom.mp4
+1. **每一帧是时间的纯函数** `render(t)`：无跨帧状态、固定种子随机，预览像素 = 成片像素。
+2. **三段式验收**：小样不过，不开全片。
+3. **9:16 安全区**：顶部 12%、底部 22% 不放关键文字（会被平台 UI 遮挡）；字幕默认 68% 高度处 + 半透明底衬。
+4. **本地预览 + 服务器渲染**：Mac 上不跑离线截图（会卡死），只看 HTML 预览拍板；逐帧渲染压片走服务器。
+5. **Not slop**：紫青霓虹、代码雨、通用粒子星云、居中大字+淡入淡出——出现即返工。
+
+## 演示
+
+根目录的单文件 HTML 双击即播（9:16 竖屏）：
+
+- `portfolio_15s_showreel.html` — 四种动态视觉风格 15 秒 showreel（旗舰演示）
+- `abg_one_opus55_trailer.html` — 期权学习工作台 30 秒宣传片
+- `criminology-opus55.html` / `criminology-15s.html` — 罪案学 kinetic typography 演示
+- `odyssey-30s.html` / `odyssey-of-light/` — 光之奥德赛系列
+
+## 仓库结构
+
+```
+├── SKILL.md              # 技法手册（给 agent 读）
+├── docs/
+│   ├── SPEC.md           # 开工总纲（给 agent 读，先读这个）
+│   ├── REPOS.md          # 12 个参考库索引 + 路线决策表
+│   ├── ENGINE.md         # 渲染引擎（mexicat 原版）
+│   ├── TREATMENT.md      # 风格圣经（mexicat 原版）
+│   └── PROMPT_LIBRARY.md # 提示词库
+├── references/           # 方法论文档（观默导演法、pdoom 学习笔记）
+├── scripts/              # 音频/构建脚本
+├── app/                  # pdoom 引擎（TypeScript + three.js，mexicat 原版）
+├── analysis/             # 音频分析工具（mexicat 原版）
+├── *.html                # 演示片（双击即播）
+└── opus55_code_video_guide.md  # Opus 5.5 代码视频方法论合集
 ```
 
-- **Output:** 1920×1080 at 60 fps, x264 CRF 16, AAC audio.
-- **Motion blur:** every frame is the average of many sub-frames spread over a short shutter (`--shutter 0.2`, a fifth of the frame time), so fast motion leaves a continuous streak instead of a few stepped copies. `--samples auto` picks the count per frame: 12 for a still frame, 36 for ordinary camera motion, 108 or 324 for whips, slams and fast zooms. It stops once more sub-frames would no longer change the image by more than `--tol` levels of 255 (default 3). `--samples N` takes a fixed N instead (`--samples 4` makes a quick draft). How it works: "Motion blur and sampling" in [`docs/ENGINE.md`](docs/ENGINE.md).
-- **Other modes:** `stills`, `sheet` (contact sheets, `--cuts` for every scene boundary), `perf`, and `plates` (regenerates `public/plates/`, the stills used by the outro's rewind montage; rerun it after changing a scene).
+## 归属
 
-### 4K
-
-```sh
-cd app
-bun scripts/render.ts video --scale 2 --samples auto --shutter 0.2 --x264 aq-mode=3:rc-lookahead=30 --out ../out/pdoom-4k.mp4
-```
-
-- **Output:** a true 3840×2160 render (not an upscale): every layer, line and shader is rendered at the physical resolution. Scenes are laid out in 1920×1080 logical pixels, so the 4K frame looks like the 1080p one, only sharper.
-- **Cost:** GPU-bound. A frame takes from about 40 ms (a still frame) to over 10 s (the ray-marched rooms at 108–324 sub-frames). The whole song took about 2.5 hours on an M5 Pro, rendered as segments in two parallel pipelines (`--from`/`--to`, then a lossless concat). Each pipeline uses about 5 GB for headless Chrome plus about 4 GB for ffmpeg; the shorter x264 lookahead above keeps ffmpeg's memory down.
-- **Encoding:** the film grain is rendered per 4K pixel, which is expensive to encode: at the default CRF 16 the file runs at about 670 Mbit/s (13 GB for the song, 8× the 1080p file), `--crf 18` gives about 450 Mbit/s and `--crf 20` about 230 Mbit/s.
-- `--scale 2` works with every mode. `stills` then saves full-resolution PNGs, and `perf` measures 4K frame times. In the browser preview, add `&scale=2` to the URL.
-
-## Regenerate the timing data
-
-The committed `data/*.json` files are all the renderer needs. Regenerating them needs the stems and intermediates, which are not in the repo:
-
-- **Stems:** Demucs `htdemucs_ft` into `analysis/stems/htdemucs_ft/pdoom/` (`uv run python -m demucs -n htdemucs_ft -o stems ../audio/pdoom.mp3`), plus the lead vocal from a mel-band-roformer karaoke model (audio-separator) in `analysis/stems/karaoke/lead.wav`.
-- **Intermediates:** `ctc_emissions.py`, `whisper_run.py` and `vocal_feats.py` write them to `analysis/work/`. The pipeline is described at the top of `analysis/align.py`.
-
-```sh
-cd analysis
-uv run python align.py      # data/lyrics.json
-uv run python analyze.py    # data/audio.json
-```
-
-The models download about 4 GB of weights into `analysis/.cache/`; delete that folder afterwards.
-
-## Credits
-
-- **Song:** "I'm Upping My P(doom)". The lyrics are by [osmarks](https://docs.osmarks.net/hypha/p%28doom%29_song_objectively_correct_interpretation), built on an opening verse and chorus by [MusicPerson](https://www.udio.com/creators/MusicPerson), with lines suggested on the EleutherAI Discord and help from Claude on the outro and final chorus. The original was generated with Udio and released in November 2024 ([YouTube](https://www.youtube.com/watch?v=uEB5E67vcPA)). This video uses the "Claude-Pop" version made with Suno, posted by [deckard (@slimer48484)](https://x.com/slimer48484/status/2097752569212756134) in September 2026.
-- **Fonts:** Archivo, IBM Plex Mono and Cormorant Garamond (SIL Open Font License). Single-stroke EMS and Hershey fonts via the `hersheytext` package (OFL / public domain).
-
-## 15-Second Motion Designer Showreels (作品集与提示词库)
-
-本项目现已沉淀四大国际顶级动态视觉风格，支持在旗舰播放器中一键实时无缝切换（9:16 竖屏，纯代码 `render(t)` 驱动，双音轨独立调节，零外部依赖）：
-
-- 📐 **瑞士工程制图风（黑橙）** (Swiss CAD Blueprint)
-- ⚡ **前卫酸性粗野主义（荧光绿）** (Acid Brutalist)
-- 🏆 **全息棱镜色散风（极光紫蓝）** (Prism Quantum Award-Winner)
-- 🇨🇭 **经典瑞士国际主义平面风（红白黑）** (Swiss International Typographic Style)
-
-🔗 **旗舰播放器**：[`portfolio_15s_showreel.html`](portfolio_15s_showreel.html)
-
-### 🌟 经典神级提示词
-完整提示词解析与设计方法论见文档 [`docs/PROMPT_LIBRARY.md`](docs/PROMPT_LIBRARY.md)：
-> `gemini4 全力以赴 - “制作一段动态的 15 秒动态图形视频，展示你是一位多么出色的动态设计师，就好像这是你简历中的作品集。全力以赴。”`
-
+- 本仓库基于 [mexicat/pdoom-video](https://github.com/mexicat/pdoom-video)（MIT）二次开发，`app/`、`analysis/`、`docs/ENGINE.md`、`docs/TREATMENT.md` 为原仓库内容。
+- `SKILL.md`、`docs/SPEC.md`、`docs/REPOS.md`、演示 HTML 为本仓库新增（MIT）。
+- 方法论吸收自：观默（@guanmo_ai）导演系统、xilo《Opus 5.5 做视频万字拆解》、Hamza Khalid 课程、Vincent Wei 制作纪律、makevoid 动效库、JohnHeibel 水彩路线。
 
 ## License
 
-The code is released under the [MIT License](LICENSE). The fonts in `app/public/fonts/` keep their own licenses (see Credits), and the song and lyrics (`audio/`, `lyrics/`, `data/lyrics.json`) are not covered by it: they belong to their authors (see Credits).
-
+MIT。`app/public/fonts/` 内字体保留各自协议；`audio/`、`lyrics/` 内歌曲与歌词归原作者。
