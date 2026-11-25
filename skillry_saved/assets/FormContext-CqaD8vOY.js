@@ -1,1 +1,0 @@
-import{fJ as t,bD as e}from"./main-CfeGpCT2.js";const r=t.createContext({formRef:{current:{fields:new Map}},errors:{},clearErrors:e,validationMode:"onSubmit",submitAttemptedRef:{current:!1}});function n(){return t.useContext(r)}export{n as u};

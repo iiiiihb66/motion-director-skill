@@ -1,1 +1,0 @@
-const s="skillry:welcome-dismissed-session",i="skillry:onboarding-dismissed";function n(e){localStorage.setItem(s,e),window.dispatchEvent(new Event(i))}function o(){return localStorage.getItem(s)}export{i as O,n as d,o as g};

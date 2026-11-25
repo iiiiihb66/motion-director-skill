@@ -1,242 +1,200 @@
 ---
 name: motion-director
-description: 代码驱动的动态视觉与网页视频/宣传片生成引擎（基于 Three.js + WebGL + Canvas2D）。将任何创意主题（科技、金融、学术、艺术、产品发布、科幻等）转化为高质感单文件 HTML 互动视频或 60FPS 实时音画同步视听大片。完全不需要逐帧离线截图压制，纯原生 HTML/JS 运行。
+description: 竖屏 9:16 科技/金融类短视频的代码动效导演系统。确定性时间轴渲染 render(t)、三段式验收、自媒体安全区排版。先读 docs/SPEC.md（开工总纲），再读本文件（技法手册）。
 ---
 
-# Motion Director Skill（代码动效与 HTML 宣传片导演）
+# Motion Director — 代码动效视频导演系统
 
-本 Skill 沉淀自前沿代码生成音乐视频神作（参考 `mexicat/pdoom-video` 架构与 Opus 5.5 / Gemini 4 方法论），致力于通过编写**确定性的数学函数、Three.js 3D 场景与 WebGL 着色器**，将任何创意主题直接转化为**可在浏览器中 60 FPS 流畅运行、可交互拖拽进度、具备顶级电影级质感的单文件 HTML 动态宣传片**。
+> **开工必读（2026-10-03 接入）**：先读 `docs/SPEC.md`（开工总纲：setup 清单、验收标准、迭代纪律），再读本文件（技法手册）。
+> 选路线、找参考：查 `docs/REPOS.md`（8 个参考库索引 + 路线决策表），原文在 `docs/REPOS.md（索引，原文在各仓库）`。
+> 本文件与 SPEC 冲突时，以 SPEC 为准。
 
-> **核心宗旨**：彻底摒弃耗时费卡、动辄卡死系统的“离线逐帧截图 + ffmpeg 压制”黑盒流程，以**纯原生 HTML / WebGL / Canvas2D** 交付极致的实时代码艺术。
+给 coding agent 用的可复现动效制作链。来源：mexicat/pdoom-video（deterministic render + motion blur + hard cuts）、观默导演系统（拍点/错相/物理/自检）、skillry.ai-videos 实战。
 
----
+## 0. 铁契约（渲染前必须满足）
 
-## 🎯 一、 顶级代码动效的五大设计哲学 (The Core Tenets)
+- 单文件（或固定入口）HTML，`window.FILM={width,height,duration,fps}`，`window.renderFrame(t)` 为时间 t 的**纯函数**。
+- 禁止 `Math.random()`/`Date.now()` 做视觉；随机用固定种子 `mulberry32`。
+- 预览用 `?t=` 定格抽帧，`requestAnimationFrame` 循环只在无参数时跑。
+- 同一帧多次渲染必须像素一致（运动模糊要求子帧可任意顺序渲染）。
 
-### 1. 确定性纯时间函数架构：$F = f(t)$
-- **严禁使用** `Math.random()`、`Date.now()`、`performance.now()` 等有状态/非确定性调用。
-- 随机效果必须使用带种子的伪随机函数（`hash12`, `mulberry32`, `snoise`），输入参数为时间 $t$ 或帧索引。
-- **效果**：无论进度条如何随意拖拽、逐帧步进（`,` / `.`），画面的每个像素与几何状态百分之百确定、严密可复现。
+## 1. 拍点网格先行（第一步，不是最后）
 
-### 2. 瑞士网格排印学：文字即画面骨骼 (Typography as Geometry)
-- **拒绝“居中大字 + 淡入淡出”的 PPT 劣质感**，文字必须是构图的几何主体：
-  - **动态字宽字重拉伸**：在重音或长音处，文字发生物理拉伸（Width 62% $\to$ 125%，Weight 300 $\to$ 900）；
-  - **微排印字偶修正 (Micro-Kerning)**：使用 `opentype.js` 或精密字宽测量，标点（’ “ ” —）符合最高规格出版物标准；
-  - **拆字重组与撞击汇聚**：文字以错相轨迹（Offset Kinematics）飞入、盖印戳（Rubber Stamp）、或随引线字符烧灼显影。
+1. 先定 BPM（如 120 → 0.5s/拍），配乐按网格写。
+2. 所有**切点**落在整拍上；所有**重动作**（标题 punch、冲击音、闪切）对准拍。
+3. 轻动作（装饰、次级元素）可以不卡拍，但重动作不对拍 = "差一口气"。
 
-### 3. 算法即材质：GLSL 程序化质感 (Procedural Shaders)
-- 抛弃粗糙的低质贴图，使用数学实时计算微观质感：
-  - **自适应铜版雕版排线 (`hatch` / `engrave`)**：利用屏幕导数 `fwidth`，随光影明暗自适应改变排线密度与宽度；
-  - **数学解析曲面 (Raymarched SDF)**：用平滑极小值（`smin`）与连续噪声生成等高线地形与有机形态；
-  - **发丝级线条批处理 (LineBatch)**：即使细于 0.7px 也不走样闪烁，自动转为亚像素透明度淡化。
+## 2. 运动链：预备 → 冲击 → 过冲 → 回稳
 
-### 4. 电影级光学后处理 (Linear HDR Filmic Pipeline)
-- 在线性浮点纹理（Linear HDR）中合成，高光经过软指数肩部曲线（Tone Shoulder）优雅压缩；
-- 配合**高斯绽光金字塔 (Bloom Pyramid)**、**胶片暗房微红光晕 (Halation)**、**边缘定焦色散 (Chromatic Aberration)** 与 **双尺度胶片颗粒 (Dual-scale Film Grain)**，消除数码生硬感，赋予实体纸本与胶片厚重感。
+- 不要只有 easeOutBack（只有过冲，没有预备）。
+- 用单连续函数，一气呵成，动量不断：
+  - `punchScale(p)`：p∈[0,0.3] 下沉到 0.94（预备蓄力）；p∈[0.3,1] 从 0.94 弹到 ~1.12（冲击+过冲）再回稳到 1.0。
+- 压扁/拉伸必须来自速度与冲量，不是随机 easing。
 
-### 5. 神经元级强卡点律动 (Neuro-synchronous Editing)
-- 拒绝匀速漂移屏保动画，使用高张力曲线（`outExpo`, `inOutCubic`, 弹簧过冲）；
-- **镜头大切分（Cut）必在小节强拍（Downbeat）**；
-- **视觉冲击（Hit / Flash / Shake）必在底鼓（Kick）与军鼓（Snare）**；
-- 动效执行错相运动链：预备 $\to$ 主体冲击 $\to$ 冲击波 $\to$ 装饰回稳。
+## 3. 错相（核心反 PPT 手段）
 
----
+- 主体先动 → 冲击波在"砸中"瞬间（过冲峰值）启动 → 背景/环境脉冲再晚 0.1s → 阴影装饰最后。
+- **禁止所有图层共用一个进度**——全体同步 = PPT 感，这是翻车第一信号。
+- SFX 打在接触帧，可故意偏一两帧，更自然。
 
-## 🚫 Not-Slop 品味禁忌清单（红线原则）
+## 4. 物理写进代码
 
-* ✖ **禁止廉价赛博朋克紫青霓虹（Neon Soup）**。
-* ✖ **禁止漂浮的屏保式匀速移动**。
-* ✖ **禁止无联系的发光大脑、数字雨或通用粒子群**。
-* ✖ **禁止把文字当成单纯的居中字幕贴在画面下方**。
+- 冲击波环 = 受力传播；标题 punch = 弹簧；粒子/星空用惯性+噪声场。
+- 禁止匀速位移、禁止整幅推拉、禁止死轮廓位移。
 
----
+## 5. 光统一
 
-## 🛠️ 二、 单文件纯 HTML 独立播放器架构规范
+- 主光方向固定（如顶部中央）；高光沿边缘走；冲击只亮环境一瞬，不全局乱抖。
+- 暗角/渐晕服务主次，别糊成奶油背景。
 
-无论面向何种主题，最终生成的单文件 HTML 均需遵循标准 **双层画布 + 交互控制器** 结构：
+## 6. 切：硬切打在重拍上
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                      HTML 宿主容器                          │
-│ ┌─────────────────────────────────────────────────────────┐ │
-│ │  Reel 视口 (支持 16:9 桌面宽屏 或 9:16 社媒竖屏切换)    │ │
-│ │  ┌───────────────────────────────────────────────────┐  │ │
-│ │  │ #depth 底层画布: Three.js WebGL 3D / GLSL 着色器  │  │ │
-│ │  ├───────────────────────────────────────────────────┤  │ │
-│ │  │ #screen 顶层画布: Canvas2D 高精排印、线框与 HUD   │  │ │
-│ │  └───────────────────────────────────────────────────┘  │ │
-│ └─────────────────────────────────────────────────────────┘ │
-│ ┌─────────────────────────────────────────────────────────┐ │
-│ │  交互控制面板 (Controls Aside):                          │ │
-│ │  - 播放/暂停按键 (Space 快捷键)                         │ │
-│ │  - 毫秒级时间轴滑块 (Seekbar: 0.00s ~ 34.00s)           │ │
-│ │  - 分镜快速跳转按钮 ([data-jump] 镜头 1~7)              │ │
-│ │  - 音量控制与侧链闪避开关联动                           │ │
-│ │  - 快捷键提示: Space 播放 | ←/→ 跳步 | [] 换镜 | H 隐UI │ │
-│ └─────────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────┘
+- 场景之间默认**硬切**（无叠化），切点 = 整拍；0.2s 渐变闪 + sub drop 冲击音覆盖切点。
+- 场景内部的转场（如代码→截图）可以用短叠化，但标题等重元素必须先淡出再进，避免重影。
+
+## 7. 运动模糊（视频感 vs 代码感的分水岭）
+
+- 每帧 = 快门内 K 个子帧的平均。快门取 0.5 帧时长，子帧均匀分布、 centered。
+- 自适应采样：切点/重动作前后 0.8s 用 K=12，其余 K=4。
+- 子帧按时间顺序无关——靠铁契约保证。
+
+## 8. 胶片颗粒（每帧一次）
+
+- 模糊之后、编码之前加：`ffmpeg -vf noise=alls=6:allf=t`。颗粒按帧变，不按子帧。
+- **血泪教训（2026-10-03，ABG pdoom 版实测）**：**禁止在 canvas 里逐帧画随机颗粒再喂给 x264**。随机颗粒会摧毁帧间预测，x264 码率泵吸，暗部出现肉眼可见的"呼吸式"闪烁（实测：900 帧里 11 处亮度交替跳变、最大跳变 16.79/255，夜间手机上非常晃眼）。canvas 帧必须干净，颗粒只走编码时的 noise 滤镜（实测 0 闪烁）。自检方法：抽每帧平均亮度，连续帧差若交替变号且 >0.15 即判定闪烁。
+- **辉光 bloom（2026-10-03 验证）**：真 bloom 不用 three.js，ffmpeg 后期链即可，C 代码飞快（900 帧约 6 分钟），不用重渲染：
+  `format=gbrp,split[a][b];[b]curves=all='0/0 0.72/0 1/1',scale=540:960,gblur=sigma=16,scale=1080:1920[bl];[a][bl]blend=all_mode=screen,format=yuv420p`
+  要点：①必须在 **RGB（gbrp）空间**做 screen 混合——在 YUV 下 screen 会把色度平面也糊掉（中性灰 128→192），全片发紫；②curves 先压掉 72% 以下的暗部，只让亮部参与辉光；③半分辨率模糊再放大，又快又柔。暗角 `vignette=PI/4.2`、颗粒 `noise=alls=5:allf=t` 串在后面一次成型。
+
+## 9. 自检链（必须跑完才交付）
+
+1. **静帧先行**：关键帧（标题砸中瞬间、切点、转场中间态）抽 PNG，逐张看。
+2. **contact sheet**：全片每 2–3 秒一张拼图，查黑场/重影/溢出。
+3. **切点抽查**：每个切点前后各抽一帧。
+4. 有问题只改对应时间段，重渲（seek(t) 的好处）。
+
+## 10. 渲染管线（本机验证过）
+
+```bash
+# 子帧渲染（puppeteer + headless chrome）
+node render_blur.mjs        # -> frames/f%04d.jpg（已做运动模糊平均）
+# 合成
+ffmpeg -y -framerate 30 -i frames/f%04d.jpg -i music.wav \
+  -vf "noise=alls=6:allf=t" \
+  -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p \
+  -c:a aac -b:a 160k -shortest -movflags +faststart out.mp4
 ```
 
----
+- `file://` 下 `page.goto` 用 `waitUntil:'domcontentloaded'`（`networkidle0` 会超时）。
+- 逐帧 `page.evaluate(renderFrame, t)` + screenshot，不要每帧 reload 页面。
+- 2026-10-03 实测：本机任何 ANGLE 后端（vulkan/gl-egl/gl）都拿不到 WebGL 上下文，无 GPU。three.js 只能走 SwiftShader 软件渲染（10–60s/帧），不可用。要 3D 感走"3D 数学 + Canvas 2D 投影"（CPU 算旋转/透视/粒子坐标，Canvas 画点线框），不用 three.js。
 
-## 🚀 三、 任意新主题的 5 步极速创制法
+## 11. 品味规则（from mexicat/pdoom-video TREATMENT）
 
-当你需要针对一个**全新主题**（如：脑机接口、量子计算、超跑工程、黑暗金融、生命科学等）创建作品时，按照以下 5 个步骤执行：
+- **每幕一个"乐器"**：共享 palette/type/grain，但每幕必须有一个独特的视觉动作（开场=字母演绎，学习=轨道环绕，模拟=曲线绘制，计划=日历脉冲，收束=光线汇聚）。五幕不能长一个样。
+- **永远有东西在动**：strong eases（outExpo/inOutCubic/弹簧）+ holds + snaps；禁止 floaty 的屏保式匀速漂移。
+- **克制**：bloom/辉光只给 signal 色；色彩 restraint；depth 靠光线，不靠堆特效。
+- **字是画面的一部分**：标题尽量与视觉元素发生关系（标注长在曲线上、数字嵌进卡片），不贴"字幕式"大字。
+- **母题复现+升级**：核心符号（logo/字母）在收束幕以更强形态回归，一浪高过一浪。
+- **默认不对称**：瑞士网格，不对称构图，慷慨留白；居中需要理由。
+- **敢删**：每次迭代列出"删了什么"。高级感来自删掉自由度，不是加特效。
+- **Not slop 清单**：紫青霓虹 cyberpunk、代码雨、镜头光斑 soup、通用粒子星云、"一看就是 AI 生成的"——出现即返工。（品牌自带渐变色除外，但 glow 要克制）
 
-### Step 1. 确立主题概念与调色板 (Theme & Palette)
-定义 1 个主背景色（通常为极深墨色）、1 个纸张文字色（骨白或纯白）、1~2 个专属强调色。
-- **示例（量子计算）**：深海黑 `#050811` + 骨白 `#EBF2FA` + 跃迁蓝 `#00D2FF` + 纠缠紫 `#9D4EDD`
-- **示例（瑞士工业）**：工业灰黑 `#0F1115` + 纯白 `#FFFFFF` + 警戒红 `#FF2A00` + 标线黄 `#FFCC00`
+## 13. 制作纪律（from Vincentwei1021/anything2explainer SKILL）
 
-### Step 2. 划分 5~7 幕镜头大纲 (Acts / Cuts)
-设定总时长（典型为 15 秒短视频 或 30~34 秒完整版），并划分切点时间数组 `CUTS = [0, 4.0, 8.5, 13.0, 18.5, 24.0, 30.0]`。为每一幕设计一个核心**“视觉乐器”**：
-- Act 1：**起笔/建档**（网格标尺、坐标原点、微观引线被点燃）
-- Act 2：**解析展开**（3D 拓扑地形、剖面切片、数据流涌现）
-- Act 3：**冲突对撞**（双轨轨迹交织、矢量箭头冲击、极端数值飙升）
-- Act 4：**微观重构**（符号网格、高密度排印压缩、特征解构）
-- Act 5：**高潮爆发**（巨型文字冲击、全屏冲击波、多重残影）
-- Act 6：**收束归档**（印章敲落、红框锁定、核心定格、平滑循环）
+- **持续动作 + 落位停留**：每幕都要有一个"动词"（数据流/绘制/点亮/光点跑线）持续到下一拍；元素入场后不许完全静止 >3s；**禁止为凑数给静止物体加无意义的漂浮/呼吸**；落位后留 30–45 帧（1–1.5s）稳定期再离场/切走。
+- **特效预算**：高光/闪烁全片定量——闪切只给切点，冲击波只给标题，不超发。特效是货币，花在刀刃上。
+- **一镜一主角**：主角 = 大字 ≥96px 或视觉主体，带光（渐变/辉光/描边）；配角不发光。背景只有幕底，不撒碎屑。
+- **四个确认点（越早改越便宜）**：方向 → 关键静帧 → 样片/配乐 → 成片。静帧阶段改 1 处 = 1 张图的成本；成片后再改 = 全片重渲。
+- **衔接干净**：离场到 α=0 再入场，无半透明"啪"断；硬切时用闪 + 冲击音覆盖切点。
+- **事实有出处**：画面上的截图、数字、文案必须来自真实产品资料，不编造产品界面。
+- **量化自检（未来）**：最长静止段、末拍稳定期可做成自动化检查（帧差法），目前先用 contact sheet 人工过。
 
-### Step 3. 准备音频与时间码 (Audio & Rhythm)
-- 方案 A（全内嵌）：将音频转为 Base64 字符串嵌入 `<audio id="soundtrack">`；
-- 方案 B（Web Audio 程序化声效）：使用 Web Audio 振荡器生成 120 BPM 极简底鼓、贝斯滤波与故障白噪声打击点；
-- 建立文字时间窗数组 `voiceWindows = [[start, end], ...]`，驱动声画同步。
+## 14. p5.brush 水彩路线（from JohnHeibel/PDoomVideo，2026-10-02 复现验证）
 
-### Step 4. 编写确定性渲染函数 `render(sec)`
-实现纯数学驱动管线：
-```javascript
-function render(sec) {
-  const t = clamp(sec, 0, D);
-  const s = stage(t);       // 计算当前处于哪个镜头
-  const u = t - CUTS[s];    // 当前镜头的局部时间 (0 ~ cut_duration)
+- 库：p5.js **2.x** + `dist/p5.brush.js`（p5 构建版），canvas 必须 **WEBGL** 模式；`brush.instance(p)` 绑定实例。
+- **渲染架构（关键）**：绘制必须放在 p5 的 `draw()` 里，逐帧调用 `await P.redraw()`（p5 2.x 返回 Promise）——p5.brush 的自动刷新挂在 draw 周期末尾。直接在外部函数里画再截图，水彩层会因 compositor 竞态随机丢失；`readPixels`/`brush.render()` 都救不了。这是 JohnHeibel 原仓库 `renderAt` 的做法（`T=t; await redraw(); composite(); outC.toDataURL()`）。
+- **opacity 是 0–255**，不是 0–1！传 0.8 ≈ 透明，这是第一个坑。
+- 笔刷名（2.2.2）：pen, rotring, 2B, HB, 2H, cpencil, pastel, crayon, charcoal, spray, marker（没有 ink/inkfine/dry）。
+- 沸腾线条：每帧 `p.randomSeed(固定+boil*K)`，`boil=Math.floor(t*12)` —— 12次/秒重抖，线条像手绘动画一样"沸腾"；`randomSeed` 会同时 seed brush。
+- 大字：Permanent Marker 字体 + ink drop-shadow（`5px 5px 0 rgba(43,38,32,.28)`），入场用 backOut 过冲。
+- 结构：chapter → shots，`fn(t, lt, dur)` 纯函数；卡拉OK条放底部；纸纹底 + 顶部颗粒。
+- 性能：单页连续 `redraw()` 会累积变慢（0.38s→3.93s/8帧，GPU 资源不释放），**每 30 帧换新页面**；600帧约15分钟。断点续渲：跳过已存在且 >5KB 的帧。
 
-  // 1. 驱动底层 3D / GLSL
-  depthFrame(t, s, u);
+## 15. 动效 helper 库（from makevoid/motion-graphics-music-video-skill，2026-10-03 移植）
 
-  // 2. 清空顶层 2D 画布
-  ctx.clearRect(0, 0, W, H);
+p5 版改写为 Canvas 2D 原生（`lib/*.js`），`<script>` 引入即用，命名空间 `Anim`。2026-10-03 已用测试页全量验证（slap/pop/shake/trace/sparkle/twinkle/karaoke/typed/slip/cues 零报错）。
 
-  // 3. 运行当前镜头的 2D 排印与几何动效
-  shots[s](u);
+- `lib/anim-time.js`：easing（linear/inCubic/outCubic/inOutCubic/outExpo/outBack/outElastic）+ `progress` / `tween` / `live` / `envelope(t,start,end,fadeIn,fadeOut)` / `steps` / `sinceStep(t,start,period,fps)`。`envelope` 是"柔和入场"的标准解（开场淡入、字幕淡入都用它，不许直接 alpha=1 弹出）。
+- `lib/anim-core.js`：`rng(seed)`（mulberry32，铁契约唯一合法随机源）、`at(ctx,x,y,{scale,rot,alpha},fn)`（变换包装）、`cues(words)`（按词查时间点，词不存在抛错，防时间轴漂移）。
+- `lib/anim-fx.js`：`slap` / `pop` / `slam`（返回 `{scale,rot,alpha}`，直接喂 `Anim.at`）+ `shake(t,start,{dur,amp,rnd})`（rnd 必须传 `Anim.rng` 实例）+ `sparkle` / `twinkle` / `trace`（折线生长+焊点）。
+- `lib/anim-type.js`：`knockout`（描边贴纸字）/ `typed` / `typedWords` / `karaoke(ctx,t,words,x,y,opts)`（**逐词** karaoke，words=`{text,s,e}`，当前词 active 色 + 下划线随词时长生长；`align:'center'` 居中）。中文 karaoke 用这个，不再用按 block 的旧写法。
+- `lib/anim-paper.js`：`slip(ctx,w,h,opts)` 撕纸边缘标签（字幕条/标注卡片），形状按 seed 缓存跨帧不变。
+- `tools/beats.py`（numpy only）：`python3 tools/beats.py song.wav 30` 输出 BPM/节拍网格/每拍强度/鼓点/ onsets。**音乐版**的切点、标题 punch 必须对准 `beats[].t`，重拍用 `bar_pos==0`。
+- `tools/audio_energy.py`：每 0.5s 音量 + 人声频段占比，旁白版用 `vocal_ratio` 定位说话段落。
 
-  // 4. 叠加全局辅助构图（刻度标尺、HUD、时间码）
-  drawHUD(t);
-}
-```
+刻意没搬的：`riso.js` 的逐像素 grain（1080×1920 下 `getImageData` 每帧太慢；颗粒走 §8 的 ffmpeg noise）；p5 专属的 `createCanvas/loadFont/clip` 精灵管线（我们是单 canvas + 系统字体）；Ruby 脚手架 + Fal 付费生成（重、不适合我们）。
 
-### Step 5. 组装为单个 `.html` 并验证
-直接输出为独立的 `.html` 文件，确保双击即可在任何现代浏览器中秒级打开，全特性 60FPS 运行。
+## 16. Reads 时间模型（from JohnHeibel/ClaudeAnimationBase ANIMATION_GUIDE Rule 4）
 
----
+观众第一次看、只看一遍、正常速度。你写代码所以知道发生了什么，观众不知道。**为每个镜头列出观众必须理解的东西（reads），按顺序，每项带起止时间。**
 
-## 💻 四、 核心动效数学与排印函数库 (The Essential Toolkit)
+- 每个 read 需要三段时间：眼睛找到它 → 理解它 → 注册它（喘息），然后才能开始下一个 read。
+- **一次只做一个 read**：两个重要 read 不能重叠。因果和反应必须串行（先让观众看清原因，再给反应）。
+- **快的动作、慢的含义**：动作本身可以很快（有预备动作 anticipation 就读得懂），但它意味着什么需要 hold 住。预备告诉观众往哪看，hold 让观众理解。快与慢的对比就是节奏；一个速度从头到尾=平。
+- **reads 决定镜头长度**：reads 没落地不能切；reads 都落地了别拖尾。最后一幕的最后一个 read 也要留时间落地再结束。
+- 每个镜头必须有一个 EVENT：第一帧和最后一帧之间有变化（想要/找到/尝试/失败/反应/得到）。"站在那很可爱"不是镜头。
+- Storyboard 格式（写进 PLAN.md）：`Logline（一句话）/ World（场景+调色板+色彩弧线）/ Motif（复现并收束的母题）/ 情绪弧线 / Shots：每 shot 起止、转场、画面、EVENT、反应、reads（起止+观众眼睛在哪）`。对照检查：每 shot 有 event 吗？每 read 有落地时间吗？每条缝有转场吗？
 
-在单文件脚本中，直接内嵌以下高能运动学与排印辅助函数：
+## 17. 动效时序数值表（from buildwithhanif/claude-animation-skill references/motion.md）
 
-```javascript
-// === 1. 运动学缓动与弹簧 ===
-const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
-const lerp = (a, b, t) => a + (b - a) * t;
-const smoothstep = (a, b, x) => {
-  const t = clamp((x - a) / (b - a));
-  return t * t * (3 - 2 * t);
-};
-const ease = {
-  outExpo: (t) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t),
-  inOutCubic: (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2,
-  outBack: (t) => { const c1 = 1.70158; const c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); }
-};
-const prog = (x, a, b, fn = ease.outExpo) => fn(clamp((x - a) / (b - a)));
-const springStep = (age, freq = 3.5, decay = 0.6) => 1 - Math.exp(-age * freq) * Math.cos(age * freq * Math.PI);
-const pulse = (t, hit, dur = 0.1) => Math.max(0, 1 - Math.abs(t - hit) / dur);
+§2 的"预备→冲击→过冲→回稳"配上这些具体数值才好用：
 
-// === 2. 动效排印与图形组件 ===
-// 单字错相汇聚
-function assembleText(ctx, str, u, start, size, y, color = '#FFFFFF', fitWidth = 740) {
-  ctx.font = `750 ${size}px "PingFang SC", sans-serif`;
-  const chars = [...str];
-  const totalW = chars.reduce((sum, ch) => sum + ctx.measureText(ch).width, 0);
-  const fit = Math.min(1, fitWidth / Math.max(1, totalW));
-  ctx.save();
-  ctx.translate(540, y);
-  ctx.scale(fit, 1);
-  let curX = -totalW / 2;
-  chars.forEach((ch, i) => {
-    const cw = ctx.measureText(ch).width;
-    const p = prog(u, start + i * 0.08, start + i * 0.08 + 0.45, ease.outBack);
-    ctx.save();
-    ctx.translate(curX + cw / 2, (1 - p) * (i % 2 ? 90 : -90));
-    ctx.rotate((1 - p) * (i % 2 ? 0.25 : -0.25));
-    ctx.globalAlpha = clamp(p);
-    ctx.fillStyle = color;
-    ctx.textAlign = 'center';
-    ctx.fillText(ch, 0, 0);
-    ctx.restore();
-    curX += cw;
-  });
-  ctx.restore();
-}
+- **Snap, then hold**：变化在 1–2 帧（0.04–0.07s）内完成，然后 hold。干脆的变化读作"有意为之"；0.5s 的 ease 读作幻灯片转场。ease 用在 settle（回稳）上，不用在变化上。
+- pop 入场过冲：`eBack` s≈1.8–2.2，时长 0.3–0.4s。
+- 冲击定格（打击感）：game time 冻结 2–3 帧（0.083s；大招 0.125s；终结 0.3s），火花/冲击环/震屏在 real time 继续动。
+- 落地 squash：1.35 → 1 用 0.18s；起跳预备：1.22 压 2 帧。
+- 组内错相：0.05–0.14s 递进；**一次只动一个东西**（除非它们是一组）。
+- 循环的元素相位全部错开（`i*1.1`），循环从中间开始（第一帧不许空）。
+- Hold 要有生命：呼吸 ±2%、眨眼每 ~3.3s、光带漂移。静帧=bug。
+- 相机：变换只加在场景层；字幕/标注/UI 覆盖层不要进相机。慢推 +5–10%/shot。
+- **bake-once-blit**（from lowpoly.mjs）：贵的东西（facet 背景、复杂装饰）在 setup() 里烘成离屏 canvas，每帧 `drawImage`，不要每帧重算。
 
-// 冲击砸字 (Kinetic Slam)
-function kineticSlam(ctx, str, u, start, size, y, color = '#FFFFFF', mode = 'slam') {
-  if (u < start) return;
-  const p = prog(u, start, start + 0.35, ease.outExpo);
-  const scale = mode === 'slam' ? 1 + 0.18 * pulse(u, start, 0.08) : 0.6 + 0.4 * p;
-  ctx.save();
-  ctx.translate(540, y);
-  ctx.scale(scale, scale);
-  ctx.font = `800 ${size}px "PingFang SC", sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = color;
-  ctx.globalAlpha = p;
-  ctx.fillText(str, 0, (1 - p) * 35);
-  ctx.restore();
-}
+## 18. QA 升级：strip / crop-at / 缓存陷阱（from ClaudeAnimationBase render.mjs + traps.md）
 
-// 印章砸盖 (Rubber Stamp)
-function stampBox(ctx, str, u, start, y, color = '#FF4D12') {
-  if (u < start) return;
-  const p = prog(u, start, start + 0.28, ease.outExpo);
-  ctx.save();
-  ctx.translate(540, y);
-  ctx.rotate(-0.08 * (1 - p * 0.2));
-  ctx.scale(1 + 0.3 * (1 - p), 1 + 0.3 * (1 - p));
-  ctx.globalAlpha = p;
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 5;
-  ctx.strokeRect(-220, -65, 440, 130);
-  ctx.fillStyle = color;
-  ctx.font = `800 72px "PingFang SC", sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(str, 0, 0);
-  ctx.restore();
-}
-```
+§9 自检链加两个工具：
 
----
+- **strip**：关键动作（转身、take、跳跃、转场）逐帧拼条（2.1:2.6 全帧拼），看有没有预备/跟随、有没有 pop、有没有左右镜像/同步。
+- **crop-at**：跟随世界坐标点的裁剪（脚/手/道具接触点），查接触：脚着地了吗？手里的东西碰到手了吗？
+- timing 读法：固定步长（0.1–0.15s）拼 sheet 按顺序读；每帧问"观众现在看哪、看懂了吗"；数帧数（24帧=1s）；重要 read 之间必须有喘息帧。
+- **缓存陷阱**：预览图可能读回缓存的旧版本，修好了看起来像没修（我们 v2 吃过这个亏）。每次输出写新文件名（v2/v3），或查 mtime。
+- Frame 0 不许空：开场画面里已经有东西（开场中段开场），不许全黑等东西弹进来。
 
-## 🤖 五、 Gemini 4 专属神级生成指令 (Gemini 4 Prompt Template)
+## 19. 解说词讲故事 12 原则（from VincentWei1021/anything2explainer reference/narration-guidance.md）
 
-当需要命令 Gemini 4 根据特定主题创建完整的 HTML 动态宣传片时，使用如下标准指令格式：
+跟 §16 的故事片方法互补：§16 管"画面怎么讲故事"（人物、事件、情绪弧线），这里管"文案怎么讲故事"（旁白版/解说版宣传片直接用）。
 
-```markdown
-请以最高水准的动态设计视觉导演（Motion Director）角色，为主题【在此输入你的主题，如：未来深空引力波观测台】创作一段 30 秒的纯代码驱动动态视觉宣传片，直接输出为可直接离线双击打开的单文件 HTML。
+- **每句话测试**：念出来问——听众是否知道了/看到了/感受到了之前没有的东西？没有就是废话，删。
+- **处境开场**：先给具体场景/问题/悬念，再给定义。以"X 是指…"或"本视频将…"开场=最宝贵的几秒浪费了。
+- **一条主线**：全片回答一个问题或走完一段旅程（从头到尾的流程、一个解决的悬念）。章节能随意调换顺序=没有主线=失败（术语叫 glossary 式失败）。
+- **先因后果**：每讲一个东西，顺序是"没它会出什么问题 → 它怎么工作 → 带来什么"。永远不要解释听众还不想知道的机制；砍长度时先砍机制细节。
+- **数字换算成可感尺度**：数字不许直接念，必须换算成日常可感的尺度（对比、类比），换算不了就删。
+- **比喻承重**：比喻只在能让听众推出新结论时用；一个比喻贯穿始终，胜过六个一次性小聪明；比喻失效立刻扔掉。
+- **说话人有判断**：像对一个聪明的朋友说话，允许有观点（"关键是这部分"），诚实面对不确定性（"大概""没人完全知道为什么"）。
+- **节奏变化**：长短句交错；连续三句同长度同句式必改。念出来检查。
+- **术语后置**：先用大白话讲清楚，再贴术语标签（"…这就是人们说的 X"）。每个引入的术语后面必须再用一次，否则不配拥有名字。
+- **结尾回扣**：1 分钟内让听众知道"做好/做坏有什么后果"；结尾回到开场场景/问题，用新理解重新框定。是收束，不是总结列表，更不是告别。
+- **不描述画面**：旁白扛原因/后果/比较/判断，画面扛结构/顺序/数量。只描述画面内容的句子删掉，让画面自己说话。
+- **精确赢得信任**：真名真数有出处，约数标明是约数。宁可平静但对，不要刺激但错。
 
-核心设计与技术规范：
-1. 视觉语言：采用冷峻精密的瑞士工程制图与学术图版风格，底色墨黑 #06080C，文字骨白 #F4F2EB，核心高亮为【输入你的专属色，如：引力金 #FFB703】。严禁紫青霓虹与劣质浮夸特效。
-2. 架构模式：采用单文件双层画布（底层 Three.js / WebGL 3D 深度，顶层 Canvas2D 毫秒级微排印），包含完整的交互播放控制器（Play/Pause、时码滑块、分镜跳转、快捷键）。
-3. 纯确定性：全局使用 render(t) 确定性数学函数，运动采用 outExpo 与弹簧缓动，各元素采用错相运动链。
-4. 分镜大纲：设计 6 幕递进分镜，依次完成「标定建档 → 拓扑展开 → 数据冲击 → 结构共振 → 核心爆发 → 最终归档」。
-5. 字效设计：实现字符错相汇聚、冲击砸字、印章敲落、动态 HUD 刻度尺与安全区辅助线。
-```
+起飞前检查表：开场第一句有人处在处境里了吗？章节能调换顺序吗（能=没主线）？每句都通过"每句话测试"了吗？结尾回扣了吗？
 
----
+## 12. 禁止清单（出现即返工）
 
-## ✅ 交付检验标准 (Quality Gate)
-- [ ] 零外部构建依赖，保存为单个 `.html` 文件双击即可打开。
-- [ ] 空格键随时播放/暂停，进度条任意拖拽无画面跳动或残留闪烁。
-- [ ] 具备专属调色盘，主色调严格控制在 3 种以内，对比度极致。
-- [ ] 文字有字重、字宽或位置动力学，无无意义的死板静态文本。
-- [ ] 整体质感呈现出如精密仪表、学术出版物或高阶科技大片般的克制力量。
+- 居中大字 + 霓虹渐变背景（默认模板味）
+- 全体元素同步淡入/淡出
+- 匀速直线位移
+- 切点/重动作不在拍子上
+- 转场处两版标题重影
+- 文字溢出画面边缘（CJK 按 1em/字 + letterSpacing 估算宽度）
+- **Opus 默认风格**（from xilo）：无限制时模型会回到"深色背景+居中大字+所有东西淡入淡出"——开工 prompt 必须明禁，用 XML `<direction>` 写清不要什么
