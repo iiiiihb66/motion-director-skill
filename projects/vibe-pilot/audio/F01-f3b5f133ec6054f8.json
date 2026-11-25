@@ -1,0 +1,10 @@
+{
+  "fingerprint": "f3b5f133ec6054f890f161e0ff6c76a232227ec76e8c137821656006195b7c25",
+  "requestedModel": "gemini-3.8-flash-tts",
+  "responseModel": "gemini-3.8-flash-tts",
+  "voice": "Puck",
+  "text": "冰箱里很凉，可它运行时，为什么还要向房间散热？",
+  "frames": 124800,
+  "sampleRate": 24000,
+  "duration": 5.2
+}

@@ -1,0 +1,31 @@
+{
+  "id": "vibe-pilot-round-1",
+  "status": "awaiting-user-web-review",
+  "revision": "675574b2a9a7",
+  "episodes": [
+    {
+      "id": "refraction",
+      "title": "吸管为什么看起来折了？",
+      "duration": 43.8,
+      "audioStatus": "generated-not-user-approved",
+      "preview": "refraction.html"
+    },
+    {
+      "id": "refrigerator",
+      "title": "冰箱怎样把热搬出去？",
+      "duration": 36.68,
+      "audioStatus": "generated-not-user-approved",
+      "preview": "refrigerator.html"
+    },
+    {
+      "id": "power-energy",
+      "title": "功率大，一定更费电吗？",
+      "duration": 39.08425,
+      "audioStatus": "generated-not-user-approved",
+      "preview": "power-energy.html"
+    }
+  ],
+  "runtimeBytes": 577504,
+  "sharedAudioBytes": 2236292,
+  "exportedVideo": false
+}

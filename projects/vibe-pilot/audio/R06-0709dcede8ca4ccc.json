@@ -1,0 +1,10 @@
+{
+  "fingerprint": "0709dcede8ca4ccc78ec059470d332c5ab4673f0c17b87947d0bc8913120a5c4",
+  "requestedModel": "gemini-3.8-flash-tts",
+  "responseModel": "gemini-3.8-flash-tts",
+  "voice": "Puck",
+  "text": "吸管仍然是直的，改变方向的是光。换个角度，错位的样子也会变。",
+  "frames": 166080,
+  "sampleRate": 24000,
+  "duration": 6.92
+}

@@ -1,0 +1,19 @@
+{
+  "measured": "decoded final MP3 tracks; voice only, optional WebAudio music separate",
+  "tracks": [
+    {
+      "episode": "refraction",
+      "integratedLUFS": -17.73,
+      "truePeakDbTP": -2.31,
+      "loudnessRangeLU": 3.2
+    },
+    {
+      "episode": "refrigerator",
+      "integratedLUFS": -18.71,
+      "truePeakDbTP": -2.01,
+      "loudnessRangeLU": 2.4
+    }
+  ],
+  "asrReadback": "not-run",
+  "subjectiveNaturalness": "pending-user-review"
+}

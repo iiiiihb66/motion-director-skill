@@ -1,0 +1,10 @@
+{
+  "fingerprint": "92c29023526f2ae117caedfd73ece5e935f211fdbcbc405542a190963dab667e",
+  "requestedModel": "gemini-3.8-flash-tts",
+  "responseModel": "gemini-3.8-flash-tts",
+  "voice": "Puck",
+  "text": "接着，压缩机消耗电能，把气体压到更高的压力和温度。",
+  "frames": 121920,
+  "sampleRate": 24000,
+  "duration": 5.08
+}

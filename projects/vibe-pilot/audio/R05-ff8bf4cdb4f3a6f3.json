@@ -1,0 +1,10 @@
+{
+  "fingerprint": "ff8bf4cdb4f3a6f31f2224421554ee14265c08c7e454cdc5b80b54876f404731",
+  "requestedModel": "gemini-3.8-flash-tts",
+  "responseModel": "gemini-3.8-flash-tts",
+  "voice": "Puck",
+  "text": "水下那一段看起来抬高了，水上、水下两段的方向，看起来对不上了。",
+  "frames": 172800,
+  "sampleRate": 24000,
+  "duration": 7.2
+}

@@ -1,0 +1,11 @@
+{
+  "fingerprint": "5f1545eb05164ff943687c556d1d3eb548083224af2e80c24a9727e958b022fa",
+  "engine": "gemini",
+  "requestedModel": "gemini-3.8-flash-tts",
+  "responseModel": "gemini-3.8-flash-tts",
+  "voice": "Puck",
+  "text": "所以，比较耗电，要一起看功率和使用时间。实际电器，还要看运行状态。",
+  "frames": 309538,
+  "sampleRate": 48000,
+  "duration": 6.448708333333333
+}

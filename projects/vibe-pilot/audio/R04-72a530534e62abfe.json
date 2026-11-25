@@ -1,0 +1,10 @@
+{
+  "fingerprint": "72a530534e62abfe872261e2912baf46cc0d21cbd4873d8d2d0b22fe345b1d2b",
+  "requestedModel": "gemini-3.8-flash-tts",
+  "responseModel": "gemini-3.8-flash-tts",
+  "voice": "Puck",
+  "text": "把进入眼睛的光，沿直线反向延长，看到的位置就比真实位置浅。",
+  "frames": 164160,
+  "sampleRate": 24000,
+  "duration": 6.84
+}

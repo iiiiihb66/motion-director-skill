@@ -1,0 +1,10 @@
+{
+  "fingerprint": "3c03c2953542964296eb4f6cd7433ec6503c6ab6a08f8cfbb9d76222dd83589e",
+  "requestedModel": "gemini-3.8-flash-tts",
+  "responseModel": "gemini-3.8-flash-tts",
+  "voice": "Puck",
+  "text": "在箱内，低压制冷剂通过蒸发器，蒸发并吸收里面的热。",
+  "frames": 128640,
+  "sampleRate": 24000,
+  "duration": 5.36
+}

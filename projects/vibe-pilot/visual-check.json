@@ -1,0 +1,159 @@
+{
+  "revision": "7cd0ae4f0637",
+  "audioChecked": false,
+  "episodes": [
+    {
+      "id": "refraction",
+      "errors": [],
+      "screens": [
+        "qa/refraction-0.jpg",
+        "qa/refraction-1.jpg",
+        "qa/refraction-2.jpg",
+        "qa/refraction-3.jpg",
+        "qa/refraction-4.jpg",
+        "qa/refraction-5.jpg"
+      ],
+      "layouts": [
+        {
+          "width": 270,
+          "stage": {
+            "width": 254,
+            "height": 451.546875
+          },
+          "captionInside": true,
+          "titleAboveDiagram": true,
+          "bodyOverflow": false
+        },
+        {
+          "width": 540,
+          "stage": {
+            "width": 508,
+            "height": 903.109375
+          },
+          "captionInside": true,
+          "titleAboveDiagram": true,
+          "bodyOverflow": false
+        },
+        {
+          "width": 1080,
+          "stage": {
+            "width": 540,
+            "height": 960
+          },
+          "captionInside": true,
+          "titleAboveDiagram": true,
+          "bodyOverflow": false
+        }
+      ],
+      "externalRequests": 0,
+      "stats": {
+        "renderedFrames": 10,
+        "averageDrawMs": 5.4,
+        "drawCalls": 55,
+        "triangles": 12010
+      }
+    },
+    {
+      "id": "refrigerator",
+      "errors": [],
+      "screens": [
+        "qa/refrigerator-0.jpg",
+        "qa/refrigerator-1.jpg",
+        "qa/refrigerator-2.jpg",
+        "qa/refrigerator-3.jpg",
+        "qa/refrigerator-4.jpg",
+        "qa/refrigerator-5.jpg"
+      ],
+      "layouts": [
+        {
+          "width": 270,
+          "stage": {
+            "width": 254,
+            "height": 451.546875
+          },
+          "captionInside": true,
+          "titleAboveDiagram": true,
+          "bodyOverflow": false
+        },
+        {
+          "width": 540,
+          "stage": {
+            "width": 508,
+            "height": 903.109375
+          },
+          "captionInside": true,
+          "titleAboveDiagram": true,
+          "bodyOverflow": false
+        },
+        {
+          "width": 1080,
+          "stage": {
+            "width": 540,
+            "height": 960
+          },
+          "captionInside": true,
+          "titleAboveDiagram": true,
+          "bodyOverflow": false
+        }
+      ],
+      "externalRequests": 0,
+      "stats": {
+        "renderedFrames": 10,
+        "averageDrawMs": 2.8299999982118607,
+        "drawCalls": 18,
+        "triangles": 2960
+      }
+    },
+    {
+      "id": "power-energy",
+      "errors": [],
+      "screens": [
+        "qa/power-energy-0.jpg",
+        "qa/power-energy-1.jpg",
+        "qa/power-energy-2.jpg",
+        "qa/power-energy-3.jpg",
+        "qa/power-energy-4.jpg",
+        "qa/power-energy-5.jpg"
+      ],
+      "layouts": [
+        {
+          "width": 270,
+          "stage": {
+            "width": 254,
+            "height": 451.546875
+          },
+          "captionInside": true,
+          "titleAboveDiagram": true,
+          "bodyOverflow": false
+        },
+        {
+          "width": 540,
+          "stage": {
+            "width": 508,
+            "height": 903.109375
+          },
+          "captionInside": true,
+          "titleAboveDiagram": true,
+          "bodyOverflow": false
+        },
+        {
+          "width": 1080,
+          "stage": {
+            "width": 540,
+            "height": 960
+          },
+          "captionInside": true,
+          "titleAboveDiagram": true,
+          "bodyOverflow": false
+        }
+      ],
+      "externalRequests": 0,
+      "stats": {
+        "renderedFrames": 10,
+        "averageDrawMs": 0.2700000017881393,
+        "drawCalls": 0,
+        "triangles": 0
+      }
+    }
+  ]
+}

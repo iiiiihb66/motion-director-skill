@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Vibe Studio · 知识大赏本地生产车间</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      Vibe Studio
+      <small>Vibe 知识大赏 · 生产车间</small>
+    </div>
+    <div class="sidebar-actions">
+      <button id="btnNewEp" class="primary">＋ 新建一集（6 种母版）</button>
+    </div>
+    <div class="ep-list-label">剧集列表</div>
+    <nav id="epList" class="ep-list"></nav>
+    <div class="sidebar-footer">
+      <a href="../../index.html?view=boards" target="_blank" rel="noopener">打开总展板 (index.html) ↗</a>
+      <a href="../../projects/vibe-style-guide/index.html" target="_blank" rel="noopener">44 套风格图鉴 ↗</a>
+    </div>
+  </aside>
+
+  <main class="workspace">
+    <section class="editor-pane">
+      <header class="pane-head">
+        <div>
+          <p class="eyebrow">EPISODE SCRIPT &amp; VOICE PIPELINE</p>
+          <h1 id="epTitleHeading">加载中...</h1>
+        </div>
+        <div class="head-actions">
+          <button id="btnSave">保存文案</button>
+          <button id="btnBuild">🔨 重新打包</button>
+          <button id="btnPublish">📤 同步到总展板</button>
+        </div>
+      </header>
+
+      <div class="voice-bar">
+        <div class="voice-info">
+          <strong>双轨配音抽卡：</strong>
+          <span>草稿用 Edge-TTS（秒出·无限），定稿用 Gemini 3.8（16s 节流·Puck）</span>
+        </div>
+        <div class="voice-buttons">
+          <button id="btnVoiceEdge">⚡ Edge-TTS 草稿配音</button>
+          <button id="btnVoiceGemini" class="primary">✨ Gemini 3.8 定稿配音</button>
+        </div>
+      </div>
+
+      <div id="statusBanner" class="status-banner" hidden></div>
+
+      <div class="meta-grid">
+        <label>标题<input id="fTitle" type="text"></label>
+        <label>核心悬念问题<input id="fQuestion" type="text"></label>
+        <label>结构主线<input id="fStructure" type="text"></label>
+        <label>一句话摘要<input id="fSummary" type="text"></label>
+      </div>
+      <label class="caveat-field">示意边界 / 严谨说明<input id="fCaveat" type="text"></label>
+
+      <div class="segments-head">
+        <h2>分镜与旁白段落</h2>
+        <span id="segSummary" class="muted"></span>
+      </div>
+      <div id="segmentsList" class="segments-list"></div>
+
+      <details class="log-drawer" open>
+        <summary>后台执行日志 <span id="jobStateBadge" class="badge">空闲</span></summary>
+        <pre id="jobLogs">等待操作...</pre>
+      </details>
+    </section>
+
+    <section class="preview-pane">
+      <div class="preview-head">
+        <div>
+          <strong>实时舞台预览（Three.js / 2D 确定性播放器）</strong>
+          <small id="previewMeta" class="muted"></small>
+        </div>
+        <div class="preview-actions">
+          <button id="btnReloadPreview">刷新预览</button>
+          <a id="openPreviewTab" class="button" href="#" target="_blank" rel="noopener">新标签打开 ↗</a>
+        </div>
+      </div>
+      <iframe id="previewFrame" title="Vibe 知识大赏预览舞台"></iframe>
+    </section>
+  </main>
+
+  <dialog id="newEpDialog">
+    <form id="newEpForm">
+      <h2>新建一集（基于 Vibe 知识大赏母版）</h2>
+      <label>英文短 ID（用于文件名，如 gravity-lens）
+        <input id="newId" required pattern="[a-z0-9-]+" placeholder="e.g. gravity-lens">
+      </label>
+      <label>中文题目
+        <input id="newTitle" required placeholder="例如：为什么黑洞周围的光会拐弯？">
+      </label>
+      <label>脚本母版
+        <select id="newTemplate"></select>
+      </label>
+      <label>开场悬念问题（3 秒让人猜）
+        <input id="newQuestion" placeholder="例如：光没有质量，为什么会被引力掰弯？">
+      </label>
+      <div class="dialog-actions">
+        <button type="button" id="cancelNewEp">取消</button>
+        <button type="submit" class="primary">创建骨架</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>

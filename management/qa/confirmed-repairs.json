@@ -1,0 +1,56 @@
+[
+  {
+    "file": "abg_one_masterpiece.html",
+    "reason": "Use existing local Three.js r128 instead of same CDN version",
+    "beforeSha256": "fba816996ad292302521924a5377eba8a5acbb0280c6cce6c40a03b2b30b9f61",
+    "afterSha256": "84784b4527ed0fababbfe210de6a5f6261c448bdbc76a27fad718006973f75ed"
+  },
+  {
+    "file": "portfolio_15s_showreel.html",
+    "reason": "Use existing local Three.js r128 instead of same CDN version",
+    "beforeSha256": "ee7054e45fb7efc80c1ee797e9b07c9391ae5dd87494dab91e6df8597df1a435",
+    "afterSha256": "c1c47c06562901bd56d541bc8bb50fb7f77a9023c0f0b1aae5ab05c2334b362d"
+  },
+  {
+    "file": "portfolio_15s_acid_brutalist.html",
+    "reason": "Use existing local Three.js r128 instead of same CDN version",
+    "beforeSha256": "de88951decce752081dcf76551d4d4f272b08d1ad3db86dfd9a39224229f844c",
+    "afterSha256": "dd91f514eefb0cf7cddf50e563f46198b25886f036f1afde985cc8d3985c8c7d"
+  },
+  {
+    "file": "assets/criminology-15s.html",
+    "reason": "Remove duplicated ended-handler tail causing SyntaxError",
+    "beforeSha256": "87ae5f8641536c0527eeb50dbbaf224c8262500033eeb4dc62363909e13e9c63",
+    "afterSha256": "1bd84a53d43edc690a9aa84be10e9d6e706750100383531fd6d04ecd997b28be"
+  },
+  {
+    "file": "criminology-15s.html",
+    "reason": "Remove duplicated ended-handler tail causing SyntaxError",
+    "beforeSha256": "87ae5f8641536c0527eeb50dbbaf224c8262500033eeb4dc62363909e13e9c63",
+    "afterSha256": "1bd84a53d43edc690a9aa84be10e9d6e706750100383531fd6d04ecd997b28be"
+  },
+  {
+    "file": "odyssey-of-light/assets/light-bundle.js",
+    "reason": "Classic-script page already uses window.LightOdysseyEngine; remove incompatible unused ESM export footer",
+    "beforeSha256": "70a7d43b8a56f99e362cea10058f325b203802619e2fe6b101ef157578f7ddbe",
+    "afterSha256": "c342bf11bf1c8928df871e4643a4aa6ca4b11db568bb3496b339097971546708"
+  },
+  {
+    "file": "huanhui_ai_promo.html",
+    "reason": "Use existing local Three.js r128 instead of same CDN version",
+    "beforeSha256": "d22c7d844b3f589faa19010a632382abe89f8e7264c1eb242f2ca90cce829776",
+    "afterSha256": "fcd288e7d82873adb0422cbaddd8bd7e76a566f2eb8241b93ed99088a4d75d04"
+  },
+  {
+    "file": "assets/criminology-15s.html",
+    "reason": "Isolate bundled scene variables; keep window.CrimMotion and window.CrimCreateScene exports; fix TAU collision with player",
+    "beforeSha256": "1bd84a53d43edc690a9aa84be10e9d6e706750100383531fd6d04ecd997b28be",
+    "afterSha256": "002df2194ccb815cc6c588f490bd3887483465f65cec9c60b202265d4de7965b"
+  },
+  {
+    "file": "criminology-15s.html",
+    "reason": "Isolate bundled scene variables; keep window.CrimMotion and window.CrimCreateScene exports; fix TAU collision with player",
+    "beforeSha256": "1bd84a53d43edc690a9aa84be10e9d6e706750100383531fd6d04ecd997b28be",
+    "afterSha256": "002df2194ccb815cc6c588f490bd3887483465f65cec9c60b202265d4de7965b"
+  }
+]

@@ -1,0 +1,251 @@
+{
+  "schemaVersion": 1,
+  "status": "draft-for-web-review",
+  "voice": {
+    "model": "gemini-3.8-flash-tts",
+    "name": "Puck",
+    "direction": "用标准普通话讲给一位好奇的朋友听。年轻、清亮、自然，有发现感；重音有轻重，保留必要的观察停顿。不要播音腔、广告叫卖、匀速念字或强行加速。只朗读正文，不朗读表演说明。"
+  },
+  "episodes": [
+    {
+      "id": "refraction",
+      "number": "01",
+      "title": "吸管为什么看起来折了？",
+      "structure": "现象 → 光路 → 看见的位置",
+      "question": "弯的是吸管，还是光？",
+      "summary": "从水面出射的光路，理解水下部分为何看起来错位。",
+      "sources": [
+        {
+          "id": "O1",
+          "title": "OpenStax · Refraction",
+          "url": "https://openstax.org/books/university-physics-volume-3/pages/1-3-refraction"
+        },
+        {
+          "id": "O2",
+          "title": "OpenStax · Apparent depth",
+          "url": "https://openstax.org/books/university-physics-volume-3/pages/2-3-images-formed-by-refraction"
+        }
+      ],
+      "caveat": "从水面观察的剖面示意；省略杯壁折射。虚像位置随视角变化，不用固定压缩比例代表所有角度。",
+      "segments": [
+        {
+          "id": "R01",
+          "label": "先看现象",
+          "scene": "phenomenon",
+          "text": "一根直吸管斜插进水里，看起来却像折了一下。",
+          "emphasis": "问题，带着好奇和一点惊讶。",
+          "facts": [
+            "O2"
+          ]
+        },
+        {
+          "id": "R02",
+          "label": "看光怎样走",
+          "scene": "path",
+          "text": "先看水下这一点。从这里反射出来的光，要穿过水面，才能到达你的眼睛。",
+          "emphasis": "放缓一点，带观众追踪一个点。",
+          "facts": [
+            "O1"
+          ]
+        },
+        {
+          "id": "R03",
+          "label": "在水面拐弯",
+          "scene": "bend",
+          "text": "光从水进入空气，斜着射出时，会偏离水面的垂线。这就是折射。",
+          "emphasis": "突出斜着射出和折射，术语清楚。",
+          "facts": [
+            "O1"
+          ]
+        },
+        {
+          "id": "R04",
+          "label": "把光路倒着延长",
+          "scene": "extend",
+          "text": "把进入眼睛的光，沿直线反向延长，看到的位置就比真实位置浅。",
+          "emphasis": "按观察过程，反向延长后留一点停顿。",
+          "facts": [
+            "O2"
+          ]
+        },
+        {
+          "id": "R05",
+          "label": "两个部分错开了",
+          "scene": "compare",
+          "text": "水下那一段看起来抬高了，水上、水下两段的方向，看起来对不上了。",
+          "emphasis": "用自然的恍然大悟语气。",
+          "facts": [
+            "O2"
+          ]
+        },
+        {
+          "id": "R06",
+          "label": "回到最初的问题",
+          "scene": "resolve",
+          "text": "吸管仍然是直的，改变方向的是光。换个角度，错位的样子也会变。",
+          "emphasis": "清楚收束，不喊口号。",
+          "facts": [
+            "O1",
+            "O2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "refrigerator",
+      "number": "02",
+      "title": "冰箱怎样把热搬出去？",
+      "structure": "任务 → 四步循环 → 能量收支",
+      "question": "冰箱里面冷，热去了哪里？",
+      "summary": "沿同一条制冷剂回路，观察吸热、压缩、放热和节流。",
+      "sources": [
+        {
+          "id": "E1",
+          "title": "U.S. DOE · Refrigeration system components",
+          "url": "https://www.energy.gov/sites/default/files/2022-01/mref-pa-tsd.pdf"
+        }
+      ],
+      "caveat": "常见蒸气压缩制冷的简化示意；部件位置、管路长度和颗粒颜色不是实机尺寸或分子模拟。散热器在部分机型中藏在侧壁。",
+      "segments": [
+        {
+          "id": "F01",
+          "label": "先找热的去向",
+          "scene": "phenomenon",
+          "text": "冰箱里很凉，可它运行时，为什么还要向房间散热？",
+          "emphasis": "像在厨房发现了一个矛盾，自然发问。",
+          "facts": [
+            "E1"
+          ]
+        },
+        {
+          "id": "F02",
+          "label": "在里面吸热",
+          "scene": "absorb",
+          "text": "在箱内，低压制冷剂通过蒸发器，蒸发并吸收里面的热。",
+          "emphasis": "蒸发器慢一点，突出吸收热。",
+          "facts": [
+            "E1"
+          ]
+        },
+        {
+          "id": "F03",
+          "label": "压缩机做功",
+          "scene": "compress",
+          "text": "接着，压缩机消耗电能，把气体压到更高的压力和温度。",
+          "emphasis": "顺着管路讲，消耗电能稍作重音。",
+          "facts": [
+            "E1"
+          ]
+        },
+        {
+          "id": "F04",
+          "label": "向房间放热",
+          "scene": "release",
+          "text": "高温制冷剂经过冷凝器，向房间放热，并逐渐凝结成液体。",
+          "emphasis": "放热和液体说清楚，节奏自然。",
+          "facts": [
+            "E1"
+          ]
+        },
+        {
+          "id": "F05",
+          "label": "降压，回到起点",
+          "scene": "expand",
+          "text": "再通过节流装置降压，回到适合蒸发吸热的状态，开始下一轮。",
+          "emphasis": "最后自然连回前面的蒸发器。",
+          "facts": [
+            "E1"
+          ]
+        },
+        {
+          "id": "F06",
+          "label": "把收支合起来",
+          "scene": "balance",
+          "text": "在稳定循环中，排到房间的热，既有从箱内搬走的热，也有冰箱消耗的电能。",
+          "emphasis": "用既有、也有组织两部分，不匀速念。",
+          "facts": [
+            "E1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "power-energy",
+      "number": "03",
+      "title": "功率大，一定更费电吗？",
+      "structure": "直觉对比 → 分开量纲 → 累计验证",
+      "question": "2000 瓦，一定比 100 瓦费电？",
+      "summary": "用两台理想恒功率设备比较功率、使用时间和总电量。",
+      "sources": [
+        {
+          "id": "W1",
+          "title": "U.S. EIA · Measuring electricity",
+          "url": "https://www.eia.gov/energyexplained/electricity/measuring-electricity.php"
+        }
+      ],
+      "caveat": "理想恒功率算例，不代表具体电器的实测耗电。实际设备的功率会变化，应按运行状态或实测累计电量比较。",
+      "segments": [
+        {
+          "id": "P01",
+          "label": "先猜哪台耗电多",
+          "scene": "phenomenon",
+          "text": "两千瓦的设备，和一百瓦的设备，哪台用的电更多？",
+          "emphasis": "自然提问，让观众先猜。",
+          "facts": [
+            "W1"
+          ]
+        },
+        {
+          "id": "P02",
+          "label": "先分清功率",
+          "scene": "power",
+          "text": "瓦表示功率，告诉你此刻消耗电能有多快。还得看，它用了多久。",
+          "emphasis": "多快、多久形成对比，但不要夸张。",
+          "facts": [
+            "W1"
+          ]
+        },
+        {
+          "id": "P03",
+          "label": "第一台，用得很短",
+          "scene": "first",
+          "text": "假设功率保持不变。两千瓦的设备，运行三分钟，用电零点一千瓦时。",
+          "emphasis": "数值清楚，三分钟后自然停顿。",
+          "facts": [
+            "W1"
+          ]
+        },
+        {
+          "id": "P04",
+          "label": "第二台，用得更久",
+          "scene": "second",
+          "text": "一百瓦的设备，连续运行两小时，用电零点二千瓦时，反而更多。",
+          "emphasis": "反而更多有发现感，不喊。",
+          "facts": [
+            "W1"
+          ]
+        },
+        {
+          "id": "P05",
+          "label": "看的是累计电量",
+          "scene": "area",
+          "text": "功率像快慢，电量看累计。恒定功率乘以时间，才得到用掉的电量。",
+          "emphasis": "用两个短句让概念落下。",
+          "facts": [
+            "W1"
+          ]
+        },
+        {
+          "id": "P06",
+          "label": "带着条件收尾",
+          "scene": "resolve",
+          "text": "所以，比较耗电，要一起看功率和使用时间。实际电器，还要看运行状态。",
+          "emphasis": "清晰收束，最后一句讲出适用范围。",
+          "facts": [
+            "W1"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,852 @@
+{
+  "scope": "Excludes dependencies, Git, model caches. Static literal HTML references and relative JS imports; server routes and runtime playback not certified. Third-party website archive, vendor and build output are inventoried but not syntax-checked.",
+  "file_count": 2423,
+  "checked_extensions": {
+    ".html": 129,
+    "": 12,
+    ".md": 53,
+    ".js": 290,
+    ".lrc": 1,
+    ".png": 302,
+    ".cjs": 7,
+    ".mp3": 64,
+    ".mjs": 24,
+    ".json": 161,
+    ".mp4": 36,
+    ".py": 74,
+    ".css": 9,
+    ".jpg": 236,
+    ".lock": 2,
+    ".toml": 1,
+    ".ts": 89,
+    ".ttf": 44,
+    ".svg": 11,
+    ".txt": 13,
+    ".wav": 62,
+    ".csv": 1,
+    ".tsx": 1,
+    ".ass": 1,
+    ".srt": 2,
+    ".bak": 1,
+    ".TXT": 1,
+    ".woff": 45,
+    ".sh": 1,
+    ".aiff": 5,
+    ".webp": 39,
+    ".zip": 1,
+    ".ogg": 12,
+    ".gif": 3,
+    ".gz": 10,
+    ".woff2": 2
+  },
+  "media": [
+    {
+      "path": "prison-study-refined/prison-management-refined-1080x1920.mp4",
+      "bytes": 32488799
+    },
+    {
+      "path": "cutaway-demo/tarantula-demo.mp4",
+      "bytes": 16687599
+    },
+    {
+      "path": "cutaway-demo/tarantula-demo-scored.mp4",
+      "bytes": 17024185
+    },
+    {
+      "path": "out/bear_birthday_mv.mp4",
+      "bytes": 30939352
+    },
+    {
+      "path": "out/video-shotcraft/test_5s.mp4",
+      "bytes": 1938814
+    },
+    {
+      "path": "out/video-shotcraft/exploded_view.mp4",
+      "bytes": 4083050
+    },
+    {
+      "path": "nobel-optogenetics/有字幕.mp4",
+      "bytes": 21714838
+    },
+    {
+      "path": "nobel-optogenetics/成片_口播.mp4",
+      "bytes": 27250371
+    },
+    {
+      "path": "nobel-optogenetics/无字幕.mp4",
+      "bytes": 26543434
+    },
+    {
+      "path": "nobel-optogenetics/备份_版画化/成片_版画版.mp4",
+      "bytes": 32294645
+    },
+    {
+      "path": "nobel-optogenetics/镜/镜09.mp4",
+      "bytes": 3414320
+    },
+    {
+      "path": "nobel-optogenetics/镜/镜08.mp4",
+      "bytes": 637136
+    },
+    {
+      "path": "nobel-optogenetics/镜/镜06.mp4",
+      "bytes": 2842614
+    },
+    {
+      "path": "nobel-optogenetics/镜/镜07.mp4",
+      "bytes": 2051402
+    },
+    {
+      "path": "nobel-optogenetics/镜/镜05.mp4",
+      "bytes": 2386566
+    },
+    {
+      "path": "nobel-optogenetics/镜/镜11.mp4",
+      "bytes": 1610760
+    },
+    {
+      "path": "nobel-optogenetics/镜/镜10.mp4",
+      "bytes": 7334145
+    },
+    {
+      "path": "nobel-optogenetics/镜/镜04.mp4",
+      "bytes": 4932648
+    },
+    {
+      "path": "nobel-optogenetics/镜/镜01.mp4",
+      "bytes": 13449499
+    },
+    {
+      "path": "nobel-optogenetics/镜/镜03.mp4",
+      "bytes": 1909589
+    },
+    {
+      "path": "nobel-optogenetics/镜/镜02.mp4",
+      "bytes": 4857827
+    },
+    {
+      "path": "nobel-optogenetics/镜_定长/镜09.mp4",
+      "bytes": 1636377
+    },
+    {
+      "path": "nobel-optogenetics/镜_定长/镜08.mp4",
+      "bytes": 517248
+    },
+    {
+      "path": "nobel-optogenetics/镜_定长/镜06.mp4",
+      "bytes": 1552595
+    },
+    {
+      "path": "nobel-optogenetics/镜_定长/镜07.mp4",
+      "bytes": 1105756
+    },
+    {
+      "path": "nobel-optogenetics/镜_定长/镜05.mp4",
+      "bytes": 1531195
+    },
+    {
+      "path": "nobel-optogenetics/镜_定长/镜11.mp4",
+      "bytes": 1063159
+    },
+    {
+      "path": "nobel-optogenetics/镜_定长/镜10.mp4",
+      "bytes": 4119372
+    },
+    {
+      "path": "nobel-optogenetics/镜_定长/镜04.mp4",
+      "bytes": 3518247
+    },
+    {
+      "path": "nobel-optogenetics/镜_定长/镜01.mp4",
+      "bytes": 8016881
+    },
+    {
+      "path": "nobel-optogenetics/镜_定长/镜03.mp4",
+      "bytes": 670862
+    },
+    {
+      "path": "nobel-optogenetics/镜_定长/镜02.mp4",
+      "bytes": 2213984
+    },
+    {
+      "path": "prism-study/prism-9x16.mp4",
+      "bytes": 10596130
+    },
+    {
+      "path": "cutaway/cutaway-out/tarantula-demo.mp4",
+      "bytes": 16687599
+    },
+    {
+      "path": "cutaway/cutaway-out/dist/tarantula-demo.mp4",
+      "bytes": 16687599
+    },
+    {
+      "path": "cutaway/cutaway-out/dist/tarantula-demo-scored.mp4",
+      "bytes": 17024185
+    },
+    {
+      "path": "jiang-jin-jiu/out/jiang-jin-jiu-master.mp4",
+      "bytes": 9961441
+    },
+    {
+      "path": "jiang-jin-jiu/out/video.mp4",
+      "bytes": 8337610
+    }
+  ],
+  "directories": [
+    {
+      "path": "nobel-optogenetics",
+      "files": 484,
+      "bytes": 357204977
+    },
+    {
+      "path": "projects",
+      "files": 223,
+      "bytes": 100945940
+    },
+    {
+      "path": "out",
+      "files": 84,
+      "bytes": 86884556
+    },
+    {
+      "path": "cutaway",
+      "files": 129,
+      "bytes": 86584092
+    },
+    {
+      "path": "app",
+      "files": 385,
+      "bytes": 76818665
+    },
+    {
+      "path": "jiang-jin-jiu",
+      "files": 104,
+      "bytes": 75716636
+    },
+    {
+      "path": "odyssey-of-light",
+      "files": 47,
+      "bytes": 62102086
+    },
+    {
+      "path": "cutaway-demo",
+      "files": 42,
+      "bytes": 59634843
+    },
+    {
+      "path": "prison-study-refined",
+      "files": 33,
+      "bytes": 42979524
+    },
+    {
+      "path": "audio",
+      "files": 66,
+      "bytes": 42447512
+    },
+    {
+      "path": "assets",
+      "files": 125,
+      "bytes": 35058615
+    },
+    {
+      "path": "skillry_saved",
+      "files": 422,
+      "bytes": 34148118
+    },
+    {
+      "path": "prism-study",
+      "files": 59,
+      "bytes": 30207210
+    },
+    {
+      "path": "prison-study",
+      "files": 50,
+      "bytes": 12376330
+    },
+    {
+      "path": "model-trials",
+      "files": 28,
+      "bytes": 9790813
+    },
+    {
+      "path": "stills",
+      "files": 6,
+      "bytes": 7515625
+    },
+    {
+      "path": "abg_one_opus55_trailer.html",
+      "files": 1,
+      "bytes": 4152691
+    },
+    {
+      "path": "odyssey-30s.html",
+      "files": 1,
+      "bytes": 2797690
+    },
+    {
+      "path": "huanhui_ai_promo.html",
+      "files": 1,
+      "bytes": 2282212
+    },
+    {
+      "path": "format-lab",
+      "files": 45,
+      "bytes": 1961844
+    },
+    {
+      "path": "criminology-15s.html",
+      "files": 1,
+      "bytes": 1860261
+    },
+    {
+      "path": "odyssey-vector-duality.html",
+      "files": 1,
+      "bytes": 1794952
+    },
+    {
+      "path": "data",
+      "files": 12,
+      "bytes": 1244261
+    },
+    {
+      "path": "cutaway-out",
+      "files": 1,
+      "bytes": 857901
+    },
+    {
+      "path": "portfolio_15s_showreel.html",
+      "files": 1,
+      "bytes": 788325
+    },
+    {
+      "path": "analysis",
+      "files": 13,
+      "bytes": 588616
+    },
+    {
+      "path": "portfolio_15s_acid_brutalist.html",
+      "files": 1,
+      "bytes": 436998
+    },
+    {
+      "path": "docs",
+      "files": 16,
+      "bytes": 130422
+    },
+    {
+      "path": "scripts",
+      "files": 18,
+      "bytes": 112571
+    },
+    {
+      "path": "bear_birthday_mv.html",
+      "files": 1,
+      "bytes": 49273
+    },
+    {
+      "path": "changchun-nanhu.html",
+      "files": 1,
+      "bytes": 34976
+    },
+    {
+      "path": ".workbuddy",
+      "files": 2,
+      "bytes": 26311
+    },
+    {
+      "path": "chunfen_mono_color.html",
+      "files": 1,
+      "bytes": 23277
+    },
+    {
+      "path": "quantum_odyssey_showreel.html",
+      "files": 1,
+      "bytes": 22760
+    },
+    {
+      "path": "abg_one_masterpiece.html",
+      "files": 1,
+      "bytes": 21642
+    },
+    {
+      "path": "SKILL.md",
+      "files": 1,
+      "bytes": 18854
+    },
+    {
+      "path": "showreel-15s.html",
+      "files": 1,
+      "bytes": 17970
+    },
+    {
+      "path": "showreel_2026.html",
+      "files": 1,
+      "bytes": 15712
+    },
+    {
+      "path": "opus55_code_video_guide.md",
+      "files": 1,
+      "bytes": 9140
+    },
+    {
+      "path": ".DS_Store",
+      "files": 1,
+      "bytes": 8196
+    },
+    {
+      "path": "references",
+      "files": 2,
+      "bytes": 6636
+    },
+    {
+      "path": "index.html",
+      "files": 1,
+      "bytes": 3662
+    },
+    {
+      "path": "lyrics",
+      "files": 2,
+      "bytes": 3002
+    },
+    {
+      "path": "README.md",
+      "files": 1,
+      "bytes": 2336
+    },
+    {
+      "path": ".learnings",
+      "files": 2,
+      "bytes": 1398
+    },
+    {
+      "path": "LICENSE",
+      "files": 1,
+      "bytes": 1074
+    },
+    {
+      "path": "3d.html",
+      "files": 1,
+      "bytes": 406
+    },
+    {
+      "path": "projects.html",
+      "files": 1,
+      "bytes": 382
+    },
+    {
+      "path": ".gitignore",
+      "files": 1,
+      "bytes": 265
+    }
+  ],
+  "syntax_findings": [],
+  "missing_literal_references": [],
+  "suspected_missing_relative_imports": [],
+  "exact_duplicate_groups": [
+    {
+      "bytes_each": 17024185,
+      "copies": [
+        "cutaway-demo/tarantula-demo-scored.mp4",
+        "cutaway/cutaway-out/dist/tarantula-demo-scored.mp4"
+      ],
+      "sha256": "d67131a59802c198e7a7b6e893df7a5c84e5828e1e8d7ee1600cb73efca3d334"
+    },
+    {
+      "bytes_each": 16687599,
+      "copies": [
+        "cutaway-demo/tarantula-demo.mp4",
+        "cutaway/cutaway-out/tarantula-demo.mp4",
+        "cutaway/cutaway-out/dist/tarantula-demo.mp4"
+      ],
+      "sha256": "bbb65425feb6e2a2c0881a5ec98e5097c41bc9df012b9bf8632880c3796b8a3d"
+    },
+    {
+      "bytes_each": 2797690,
+      "copies": [
+        "odyssey-30s.html",
+        "odyssey-of-light/odyssey-30s.html"
+      ],
+      "sha256": "63972d6b0c2fc912d6df66ab5639723db202858db84de127785b962104644326"
+    },
+    {
+      "bytes_each": 1860261,
+      "copies": [
+        "criminology-15s.html",
+        "assets/criminology-15s.html"
+      ],
+      "sha256": "002df2194ccb815cc6c588f490bd3887483465f65cec9c60b202265d4de7965b"
+    },
+    {
+      "bytes_each": 1681388,
+      "copies": [
+        "jiang-jin-jiu/soundtrack.mp3",
+        "jiang-jin-jiu/3d/soundtrack.mp3",
+        "jiang-jin-jiu/out/soundtrack.mp3"
+      ],
+      "sha256": "b22e5d89f1e911d78a5e1e3d844f4de248d488bd7bebb3fffba56da819cf385f"
+    },
+    {
+      "bytes_each": 1362590,
+      "copies": [
+        "app/dist/audio/pdoom.mp3",
+        "audio/pdoom.mp3"
+      ],
+      "sha256": "ad3d62545d951e8536967435d1c81bcb0835f0cd71e64c079f9e86d9aed8f127"
+    },
+    {
+      "bytes_each": 1009414,
+      "copies": [
+        "app/dist/audio/crim-opus55-cinematic/score.mp3",
+        "audio/crim-opus55-cinematic/score.mp3"
+      ],
+      "sha256": "96ac617b26aa6b38bf0bc74defdfd50eec11fba78fa2ea46744dae3b9c89ed9a"
+    },
+    {
+      "bytes_each": 914569,
+      "copies": [
+        "cutaway-demo/wasp-demo.html",
+        "cutaway/cutaway-out/dist/wasp-demo.html"
+      ],
+      "sha256": "c4deecdee97f8d7ea1593c8627c0c51c63279cb7640f4446a4fee73ed460dd44"
+    },
+    {
+      "bytes_each": 914415,
+      "copies": [
+        "cutaway-demo/piranha-film.html",
+        "cutaway/cutaway-out/dist/piranha-film.html"
+      ],
+      "sha256": "ed0b97173cb80b5987dedc299c775be29841f0e8ef1beac66593a7f0f426047c"
+    },
+    {
+      "bytes_each": 914374,
+      "copies": [
+        "cutaway-demo/piranha-demo.html",
+        "cutaway/cutaway-out/dist/piranha-demo.html"
+      ],
+      "sha256": "3cae03d324134175def940339f734799158d4809b6c12f6d32e799c9a76eaac1"
+    },
+    {
+      "bytes_each": 905740,
+      "copies": [
+        "cutaway-demo/tarantula-film.html",
+        "cutaway/cutaway-out/dist/tarantula-film.html"
+      ],
+      "sha256": "099a592aa62becf6dfe8b5fe224333e3538bfdb48d1fbef10aff99db598407fb"
+    },
+    {
+      "bytes_each": 905726,
+      "copies": [
+        "cutaway-demo/wasp-film.html",
+        "cutaway/cutaway-out/dist/wasp-film.html"
+      ],
+      "sha256": "29a7114473055c1a597ad454465ea7a380d12a92481382185a5c22c57ca5582e"
+    },
+    {
+      "bytes_each": 905704,
+      "copies": [
+        "cutaway-demo/tarantula-demo.html",
+        "cutaway/cutaway-out/dist/tarantula-demo.html"
+      ],
+      "sha256": "a7179f1519f1227fda84c507715fc4e82e8c27cc660b87c763cf78e0978a5340"
+    },
+    {
+      "bytes_each": 874527,
+      "copies": [
+        "cutaway-demo/f1-film.html",
+        "cutaway/cutaway-out/dist/f1-film.html"
+      ],
+      "sha256": "67890790d28974684cfe189147ce74724795cde2ef4b28731d066e45931d7bbb"
+    },
+    {
+      "bytes_each": 867165,
+      "copies": [
+        "cutaway-demo/plane-film.html",
+        "cutaway/cutaway-out/dist/plane-film.html"
+      ],
+      "sha256": "f37f4542d656f0e41d7a91603d6cd76c5cdcb9e95adfac5ee3b8da3e118fc1ca"
+    },
+    {
+      "bytes_each": 857901,
+      "copies": [
+        "cutaway-demo/car-film.html",
+        "cutaway-out/dist/car-film.html"
+      ],
+      "sha256": "21da30ac29088a2b51b9b4e3cea1c6bbb2bc3970b58ae0ef3daff4837600d7b8"
+    },
+    {
+      "bytes_each": 841186,
+      "copies": [
+        "app/dist/audio/crim-opus55-cinematic/narration.mp3",
+        "audio/crim-opus55-cinematic/narration.mp3"
+      ],
+      "sha256": "2bdf3ef84e389b6f0576c6c782e7613d987e7487e1188431c1d2a583ec08cb01"
+    },
+    {
+      "bytes_each": 817571,
+      "copies": [
+        "app/dist/audio/audio.mp3",
+        "app/dist/audio/abg.mp3",
+        "audio/audio.mp3",
+        "audio/abg.mp3"
+      ],
+      "sha256": "7012d92572615e41e4dfcf18467214266cbf7d6685e1334b08fe3826474f4154"
+    },
+    {
+      "bytes_each": 681449,
+      "copies": [
+        "app/dist/audio/criminology-score.mp3",
+        "audio/criminology-score.mp3"
+      ],
+      "sha256": "b364f2cf5e841c04a22e1c20ea7079475960b5b4186b75ae34a1ef5d6e86e839"
+    },
+    {
+      "bytes_each": 634124,
+      "copies": [
+        "prison-study-refined/narration-gemini.mp3",
+        "prison-study/narration-gemini.mp3"
+      ],
+      "sha256": "fdcaf6c918df70fc53ab77ea9491b196170c7d5726d594d968481cc0cb5eb66d"
+    },
+    {
+      "bytes_each": 544172,
+      "copies": [
+        "app/dist/audio/criminology-narration.mp3",
+        "audio/criminology-narration.mp3"
+      ],
+      "sha256": "de837c9c2a897b45abb74d55a4597ed2f7cb7a3158dfa12620344ec384035edc"
+    },
+    {
+      "bytes_each": 409004,
+      "copies": [
+        "app/dist/audio/criminology-ambience.mp3",
+        "audio/criminology-ambience.mp3"
+      ],
+      "sha256": "3cf9606c025a109cd63d35cb5408f008e5c1c039aa4f21aec8b6d6b229f081f3"
+    },
+    {
+      "bytes_each": 361918,
+      "copies": [
+        "app/dist/audio/criminology-15s-score.mp3",
+        "audio/criminology-15s-score.mp3"
+      ],
+      "sha256": "37a4de333d2911911c6c11fc99b737d68a9a363d4f5de90f43108fd633e337c9"
+    },
+    {
+      "bytes_each": 301497,
+      "copies": [
+        "app/dist/audio/music_only.mp3",
+        "audio/music_only.mp3"
+      ],
+      "sha256": "024327dc8110fccb4a9853fb9fc2bf4f392e9ab6ce1a3405a34f574b788326fa"
+    },
+    {
+      "bytes_each": 301497,
+      "copies": [
+        "app/dist/audio/kinetic_reel_master.mp3",
+        "audio/kinetic_reel_master.mp3"
+      ],
+      "sha256": "216d1357b56b3938fee6376f5868ca322299bffe746a826592dfb2b882d74cb3"
+    },
+    {
+      "bytes_each": 301484,
+      "copies": [
+        "app/dist/audio/criminology-15s-narration.mp3",
+        "audio/criminology-15s-narration.mp3"
+      ],
+      "sha256": "188564e13ecae40fee72e039fd60a3e8848e264cc2c60fa13284e68fd3882eff"
+    },
+    {
+      "bytes_each": 241205,
+      "copies": [
+        "app/dist/audio/voice_only.mp3",
+        "audio/voice_only.mp3"
+      ],
+      "sha256": "a2c92f6b2159f19dc1dcd155746830230b1b569b63d99e6ee240d02763f28dfe"
+    },
+    {
+      "bytes_each": 241205,
+      "copies": [
+        "app/dist/audio/showreel-15s.mp3",
+        "audio/showreel-15s.mp3"
+      ],
+      "sha256": "1527f31fc8ecd889525c8098b06c83891ba7c82302af660922b5a6f5a68dad3a"
+    },
+    {
+      "bytes_each": 235748,
+      "copies": [
+        "prism-study/narration-gemini.mp3",
+        "prism-study/dist/assets/narration-gemini-uq4yzMBs.mp3"
+      ],
+      "sha256": "e21eac72383162c316b89391dd49f2aca11336a1b9dd3dcf506187ee13b66661"
+    },
+    {
+      "bytes_each": 27792,
+      "copies": [
+        "app/dist/audio/crim-voice/intro.mp3",
+        "audio/crim-voice/intro.mp3"
+      ],
+      "sha256": "ec9a0c43004b54495861eb348e9e59c088256f8c3452268727e4ce8365d7e99c"
+    },
+    {
+      "bytes_each": 27504,
+      "copies": [
+        "app/dist/audio/crim-opus55-cinematic/title.mp3",
+        "audio/crim-opus55-cinematic/title.mp3"
+      ],
+      "sha256": "20a36129a536d11e273ba6342c32ba7a66c96416e48d4a7d8f37f49289f72911"
+    },
+    {
+      "bytes_each": 27360,
+      "copies": [
+        "app/dist/audio/crim-opus55-cinematic/causes.mp3",
+        "audio/crim-opus55-cinematic/causes.mp3"
+      ],
+      "sha256": "567c21bbeef67449db97488f231f81d21bad501e91337c07947e1bba9fc450aa"
+    },
+    {
+      "bytes_each": 24912,
+      "copies": [
+        "app/dist/audio/crim-opus55-cinematic/victims.mp3",
+        "audio/crim-opus55-cinematic/victims.mp3"
+      ],
+      "sha256": "8242b20e594ffa2e4cb3796f2797e8ed44d7265497424d08ca0f8b1cacefe9fc"
+    },
+    {
+      "bytes_each": 24768,
+      "copies": [
+        "app/dist/audio/crim-voice-15s/s5_title.mp3",
+        "audio/crim-voice-15s/s5_title.mp3"
+      ],
+      "sha256": "89c0c5c40b0bc5c23b4a11ce3a23c71fe20ed784809e8819a2a594500c9454c1"
+    },
+    {
+      "bytes_each": 24192,
+      "copies": [
+        "app/dist/audio/crim-voice/profile.mp3",
+        "audio/crim-voice/profile.mp3"
+      ],
+      "sha256": "d6d08b774f6eb530d9cbdbc7ef029cc570864e603357a4dee0f700f889d6dc05"
+    },
+    {
+      "bytes_each": 24192,
+      "copies": [
+        "app/dist/audio/crim-voice/exchange.mp3",
+        "audio/crim-voice/exchange.mp3"
+      ],
+      "sha256": "2956598f9e5af226b4d2dfff0956b792eab09ebfea99ff3ca09ce137dbda1678"
+    },
+    {
+      "bytes_each": 24048,
+      "copies": [
+        "app/dist/audio/crim-voice/path.mp3",
+        "audio/crim-voice/path.mp3"
+      ],
+      "sha256": "d228a0524da3126cdda08797c05568102e7efebe625194e5081a78064fa0b81a"
+    },
+    {
+      "bytes_each": 23616,
+      "copies": [
+        "app/dist/audio/crim-opus55-cinematic/entry.mp3",
+        "audio/crim-opus55-cinematic/entry.mp3"
+      ],
+      "sha256": "8b14ff046512d326936f2f5dd80ffaf8ee2a07f6c0155c3402406ddd931fe1a0"
+    },
+    {
+      "bytes_each": 23040,
+      "copies": [
+        "app/dist/audio/crim-opus55-cinematic/prevention.mp3",
+        "audio/crim-opus55-cinematic/prevention.mp3"
+      ],
+      "sha256": "223794ce3c86365b4d225605529442a128e17463def4ad1a7a2bd717b7fe9cc9"
+    },
+    {
+      "bytes_each": 22608,
+      "copies": [
+        "app/dist/audio/crim-opus55-cinematic/evidence.mp3",
+        "audio/crim-opus55-cinematic/evidence.mp3"
+      ],
+      "sha256": "f391f05095d5ad45d07e8ee6f30ca30f8b0ed47ff2f881005a479566486ef598"
+    },
+    {
+      "bytes_each": 22032,
+      "copies": [
+        "app/dist/audio/crim-voice/uv.mp3",
+        "audio/crim-voice/uv.mp3"
+      ],
+      "sha256": "799b8e2b4c89c5aaecadd4c198ff26884bcc9678f30585031191131cb3a5a35c"
+    },
+    {
+      "bytes_each": 22032,
+      "copies": [
+        "app/dist/audio/crim-opus55-cinematic/justice.mp3",
+        "audio/crim-opus55-cinematic/justice.mp3"
+      ],
+      "sha256": "3b562a02e79e12af42ec9f930eecc3d344567f51b1cfeb2c21b40b6788515d62"
+    },
+    {
+      "bytes_each": 21744,
+      "copies": [
+        "app/dist/audio/crim-voice/end.mp3",
+        "audio/crim-voice/end.mp3"
+      ],
+      "sha256": "3a701a60b873bb1e072a71fbc2dc579a33f8c3a52ca55e97d305d69dbb3270f0"
+    },
+    {
+      "bytes_each": 20448,
+      "copies": [
+        "app/dist/audio/crim-voice/outline.mp3",
+        "audio/crim-voice/outline.mp3"
+      ],
+      "sha256": "5f0c65fd01bcebe251816cec087717f82e055e70b76be2cf109fc3d59e535916"
+    },
+    {
+      "bytes_each": 15696,
+      "copies": [
+        "app/dist/audio/crim-voice-15s/s1_intro.mp3",
+        "audio/crim-voice-15s/s1_intro.mp3"
+      ],
+      "sha256": "fec519bb615af246e22a9bd3040b8e5194508793985a7751f65eef49ced5b630"
+    },
+    {
+      "bytes_each": 15408,
+      "copies": [
+        "app/dist/audio/crim-voice-15s/s3_path.mp3",
+        "audio/crim-voice-15s/s3_path.mp3"
+      ],
+      "sha256": "ca38a8806d0c53b024f18768f2397241982284a3f4e1b9da671885ec2c89858f"
+    },
+    {
+      "bytes_each": 15120,
+      "copies": [
+        "app/dist/audio/crim-voice-15s/s2_uv.mp3",
+        "audio/crim-voice-15s/s2_uv.mp3"
+      ],
+      "sha256": "0d8bbe4c1cbf0a2a976c0bc0d1687fa2636da97ed4daae5568ae5fcad17c5658"
+    },
+    {
+      "bytes_each": 14832,
+      "copies": [
+        "app/dist/audio/crim-voice-15s/s4_locard.mp3",
+        "audio/crim-voice-15s/s4_locard.mp3"
+      ],
+      "sha256": "4d5f80b6d7d83bba89ec93ff49b281869cc7ab25834f76d67c7db8db7dd85f27"
+    },
+    {
+      "bytes_each": 13824,
+      "copies": [
+        "app/dist/audio/crim-voice-15s/s5_title_short.mp3",
+        "audio/crim-voice-15s/s5_title_short.mp3"
+      ],
+      "sha256": "b107cd835991bfcd5d87413f36b2cb8e32e9dcdfc30c18306a883d9673bed32e"
+    },
+    {
+      "bytes_each": 13680,
+      "copies": [
+        "app/dist/audio/crim-voice/title.mp3",
+        "audio/crim-voice/title.mp3"
+      ],
+      "sha256": "0a65df34ab5395c64d80388c43105c73daf50c8dff933d433d5146a554712bd0"
+    }
+  ]
+}

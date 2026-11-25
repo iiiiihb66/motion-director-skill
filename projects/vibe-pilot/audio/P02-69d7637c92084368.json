@@ -1,0 +1,11 @@
+{
+  "fingerprint": "69d7637c9208436886b34626cd03361259996072f793a0c4ea488879a94431ed",
+  "engine": "gemini",
+  "requestedModel": "gemini-3.8-flash-tts",
+  "responseModel": "gemini-3.8-flash-tts",
+  "voice": "Puck",
+  "text": "瓦表示功率，告诉你此刻消耗电能有多快。还得看，它用了多久。",
+  "frames": 319598,
+  "sampleRate": 48000,
+  "duration": 6.658291666666667
+}

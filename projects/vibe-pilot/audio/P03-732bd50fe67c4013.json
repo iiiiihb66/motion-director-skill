@@ -1,0 +1,11 @@
+{
+  "fingerprint": "732bd50fe67c4013a463abaaaaed76765b7db2e809f71005398fa34c8f411378",
+  "engine": "gemini",
+  "requestedModel": "gemini-3.8-flash-tts",
+  "responseModel": "gemini-3.8-flash-tts",
+  "voice": "Puck",
+  "text": "假设功率保持不变。两千瓦的设备，运行三分钟，用电零点一千瓦时。",
+  "frames": 305464,
+  "sampleRate": 48000,
+  "duration": 6.363833333333333
+}

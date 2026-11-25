@@ -1,0 +1,11 @@
+{
+  "checks": {
+    "allThirtyTwoTopicsVisible": true,
+    "perShotFilesIncluded": true,
+    "attachmentSearch": true,
+    "missingAssetsClearlyLabeled": true,
+    "restoredPreviewOpensWithoutServer": true,
+    "everyTopicHasThumbnail": true
+  },
+  "errors": []
+}

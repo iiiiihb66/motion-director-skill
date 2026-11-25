@@ -1,0 +1,4 @@
+{
+  "status": "too_many_requests",
+  "message": "Rate limit exceeded for model gemini-3.8-flash-tts (limit: 10 requests per day on Free Tier). Please retry in 16h52m59s or upgrade your tier at https://ai.dev/rate-limit."
+}

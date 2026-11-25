@@ -1,0 +1,1 @@
+/Users/fuhongbo/.gemini/config/skills/lemo-opuscar/SKILL.md

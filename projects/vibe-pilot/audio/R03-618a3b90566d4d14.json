@@ -1,0 +1,10 @@
+{
+  "fingerprint": "618a3b90566d4d14669249d8b98e38b8ea7c0f3e1a904aa1f266761fb93a658e",
+  "requestedModel": "gemini-3.8-flash-tts",
+  "responseModel": "gemini-3.8-flash-tts",
+  "voice": "Puck",
+  "text": "光从水进入空气，斜着射出时，会偏离水面的垂线。这就是折射。",
+  "frames": 177600,
+  "sampleRate": 24000,
+  "duration": 7.4
+}

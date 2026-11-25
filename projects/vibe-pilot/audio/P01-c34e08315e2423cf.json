@@ -1,0 +1,11 @@
+{
+  "fingerprint": "c34e08315e2423cf653ab9b220c9f560420aaee1387a3c4447c917c73ee2c4e3",
+  "engine": "gemini",
+  "requestedModel": "gemini-3.8-flash-tts",
+  "responseModel": "gemini-3.8-flash-tts",
+  "voice": "Puck",
+  "text": "两千瓦的设备，和一百瓦的设备，哪台用的电更多？",
+  "frames": 206516,
+  "sampleRate": 48000,
+  "duration": 4.302416666666667
+}

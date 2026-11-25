@@ -1,0 +1,161 @@
+{
+  "date": "2026-11-15",
+  "mode": "file",
+  "episodes": [
+    {
+      "id": "refraction",
+      "errors": [],
+      "checks": {
+        "allSegmentsAndCutsRendered": true,
+        "repeatSeekSameFrame": true,
+        "audioPlayPause": true,
+        "audioSeekUsesMeasuredTime": true,
+        "editMutesOldVoiceAndExportsScript": true,
+        "restoreOriginalWorks": true,
+        "feedbackPersistsInBrowser": true
+      },
+      "screens": [
+        "qa/refraction-0.jpg",
+        "qa/refraction-1.jpg",
+        "qa/refraction-2.jpg",
+        "qa/refraction-3.jpg",
+        "qa/refraction-4.jpg",
+        "qa/refraction-5.jpg"
+      ],
+      "layouts": [
+        {
+          "width": 270,
+          "captionInside": true,
+          "titleAboveDiagram": true,
+          "bodyOverflow": false
+        },
+        {
+          "width": 540,
+          "captionInside": true,
+          "titleAboveDiagram": true,
+          "bodyOverflow": false
+        },
+        {
+          "width": 1080,
+          "captionInside": true,
+          "titleAboveDiagram": true,
+          "bodyOverflow": false
+        }
+      ],
+      "duration": 43.8,
+      "audioStatus": "generated-not-user-approved",
+      "repeatSeekPixelDifference": {
+        "meanRGBError": 0,
+        "sameDimensions": true
+      },
+      "decodedAudioDuration": 43.8,
+      "measuredSample": {
+        "seconds": 8.155,
+        "frames": 244,
+        "averageFps": 29.920294297976703,
+        "note": "One 8-second Chrome playback; not a sustained thermal test."
+      },
+      "externalHttpRequests": 0
+    },
+    {
+      "id": "refrigerator",
+      "errors": [],
+      "checks": {
+        "allSegmentsAndCutsRendered": true,
+        "repeatSeekSameFrame": true,
+        "audioPlayPause": true,
+        "audioSeekUsesMeasuredTime": true,
+        "editMutesOldVoiceAndExportsScript": true,
+        "restoreOriginalWorks": true,
+        "feedbackPersistsInBrowser": true
+      },
+      "screens": [
+        "qa/refrigerator-0.jpg",
+        "qa/refrigerator-1.jpg",
+        "qa/refrigerator-2.jpg",
+        "qa/refrigerator-3.jpg",
+        "qa/refrigerator-4.jpg",
+        "qa/refrigerator-5.jpg"
+      ],
+      "layouts": [
+        {
+          "width": 270,
+          "captionInside": true,
+          "titleAboveDiagram": true,
+          "bodyOverflow": false
+        },
+        {
+          "width": 540,
+          "captionInside": true,
+          "titleAboveDiagram": true,
+          "bodyOverflow": false
+        },
+        {
+          "width": 1080,
+          "captionInside": true,
+          "titleAboveDiagram": true,
+          "bodyOverflow": false
+        }
+      ],
+      "duration": 36.68,
+      "audioStatus": "generated-not-user-approved",
+      "repeatSeekPixelDifference": {
+        "meanRGBError": 0,
+        "sameDimensions": true
+      },
+      "decodedAudioDuration": 36.68,
+      "externalHttpRequests": 0
+    },
+    {
+      "id": "power-energy",
+      "errors": [],
+      "checks": {
+        "allSegmentsAndCutsRendered": true,
+        "repeatSeekSameFrame": true,
+        "silentDraftExplicit": true,
+        "editMutesOldVoiceAndExportsScript": true,
+        "restoreOriginalWorks": true,
+        "feedbackPersistsInBrowser": true
+      },
+      "screens": [
+        "qa/power-energy-0.jpg",
+        "qa/power-energy-1.jpg",
+        "qa/power-energy-2.jpg",
+        "qa/power-energy-3.jpg",
+        "qa/power-energy-4.jpg",
+        "qa/power-energy-5.jpg"
+      ],
+      "layouts": [
+        {
+          "width": 270,
+          "captionInside": true,
+          "titleAboveDiagram": true,
+          "bodyOverflow": false
+        },
+        {
+          "width": 540,
+          "captionInside": true,
+          "titleAboveDiagram": true,
+          "bodyOverflow": false
+        },
+        {
+          "width": 1080,
+          "captionInside": true,
+          "titleAboveDiagram": true,
+          "bodyOverflow": false
+        }
+      ],
+      "duration": 43.05767441860465,
+      "audioStatus": "not-generated-quota",
+      "repeatSeekPixelDifference": {
+        "meanRGBError": 0,
+        "sameDimensions": true
+      },
+      "externalHttpRequests": 0
+    }
+  ],
+  "videoExported": false,
+  "asrReadback": "not-run",
+  "subjectiveVoiceReview": "pending-user",
+  "revision": "5df91f03999a"
+}

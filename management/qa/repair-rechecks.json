@@ -1,0 +1,36 @@
+{
+  "date": "2026-11-14",
+  "scope": "Consolidated actual local browser rechecks from the two repair runs; latest criminology pass supersedes its earlier TAU error.",
+  "versions": [
+    {
+      "path": "odyssey-of-light/index.html",
+      "errors": [],
+      "image": "assets/project-thumbs/version-380702be6dbadf.jpg"
+    },
+    {
+      "path": "assets/criminology-15s.html",
+      "errors": [],
+      "image": "assets/project-thumbs/version-123cdcfcaf3de5.jpg"
+    },
+    {
+      "path": "abg_one_masterpiece.html",
+      "errors": [],
+      "image": "assets/project-thumbs/version-78f5aba5dee0b0.jpg"
+    },
+    {
+      "path": "portfolio_15s_showreel.html",
+      "errors": [],
+      "image": "assets/project-thumbs/version-8db9a0271e0429.jpg"
+    },
+    {
+      "path": "portfolio_15s_acid_brutalist.html",
+      "errors": [],
+      "image": "assets/project-thumbs/version-a48e46bde7875c.jpg"
+    },
+    {
+      "path": "huanhui_ai_promo.html",
+      "errors": [],
+      "image": "assets/project-thumbs/version-fe44bea6679c26.jpg"
+    }
+  ]
+}

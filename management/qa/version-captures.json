@@ -1,0 +1,458 @@
+{
+  "date": "2026-11-14",
+  "scope": "Actual screenshots; runtime errors retained for review. Captures are not full playback certification.",
+  "versions": [
+    {
+      "path": "prism-study/prism-study.html",
+      "project": "prism",
+      "errors": [],
+      "image": "assets/project-thumbs/version-0acaf1ae2bc69d.jpg",
+      "title": "光的来处 · 棱镜实验 · 竖屏版",
+      "canvases": 1
+    },
+    {
+      "path": "prison-study/prison-study.html",
+      "project": "prison",
+      "errors": [],
+      "image": "assets/project-thumbs/version-a684575ac5562f.jpg",
+      "title": "秩序的背后 · 监狱管理手记",
+      "canvases": 1
+    },
+    {
+      "path": "prison-study-refined/prison-study.html",
+      "project": "prison",
+      "errors": [],
+      "image": "assets/project-thumbs/version-5fc4ce746534c4.jpg",
+      "title": "秩序的背后 · 精细模型版 V2",
+      "canvases": 1
+    },
+    {
+      "path": "odyssey-vector-duality.html",
+      "project": "light",
+      "errors": [],
+      "image": "assets/project-thumbs/version-21d70206442053.jpg",
+      "title": "光的历程 · 极简硬核矢量蓝图版 (The Odyssey of Light · Vector Duality Edition)",
+      "canvases": 1
+    },
+    {
+      "path": "odyssey-30s.html",
+      "project": "light",
+      "errors": [],
+      "image": "assets/project-thumbs/version-8aa813f0e7afe9.jpg",
+      "title": "光的历程 · 30秒动态图形作品集大作 (The Odyssey of Light · 30s Motion Reel)",
+      "canvases": 2
+    },
+    {
+      "path": "odyssey-of-light/index.html",
+      "project": "light",
+      "errors": [
+        "Unexpected token 'export'"
+      ],
+      "image": "assets/project-thumbs/version-380702be6dbadf.jpg",
+      "title": "光的历程：从微粒到量子 · 教育艺术动画片 (The Odyssey of Light)",
+      "canvases": 2
+    },
+    {
+      "path": "jiang-jin-jiu/3d/index.html",
+      "project": "poem",
+      "errors": [],
+      "image": "assets/project-thumbs/version-897f875c1573a4.jpg",
+      "title": "《将进酒 · 惜樽空》- 3D 盛唐烟雨江峡历史拆解大片",
+      "canvases": 1
+    },
+    {
+      "path": "nobel-optogenetics/预览.html",
+      "project": "nobel",
+      "errors": [],
+      "image": "assets/project-thumbs/version-b956191da4fa27.jpg",
+      "title": "一束光遥控大脑 · 2026 诺贝尔生理学或医学奖",
+      "canvases": 0
+    },
+    {
+      "path": "nobel-optogenetics/备份_版画化/预览.html",
+      "project": "nobel",
+      "errors": [],
+      "image": "assets/project-thumbs/version-b7647d4c6f1cee.jpg",
+      "title": "一束光遥控大脑 · 2026 诺贝尔生理学或医学奖",
+      "canvases": 0
+    },
+    {
+      "path": "assets/criminology-15s.html",
+      "project": "crime",
+      "errors": [
+        "Unexpected token '}'"
+      ],
+      "image": "assets/project-thumbs/version-123cdcfcaf3de5.jpg",
+      "title": "犯罪学 · 15秒自媒体竖屏宣传片 (9:16)",
+      "canvases": 2
+    },
+    {
+      "path": "assets/criminology-blueprint.html",
+      "project": "crime",
+      "errors": [],
+      "image": "assets/project-thumbs/version-064e0f8ff60389.jpg",
+      "title": "犯罪学 · 蓝图取证",
+      "canvases": 1
+    },
+    {
+      "path": "assets/criminology-editorial.html",
+      "project": "crime",
+      "errors": [],
+      "image": "assets/project-thumbs/version-11f30e20e93349.jpg",
+      "title": "犯罪学 · 黑白档案",
+      "canvases": 1
+    },
+    {
+      "path": "assets/criminology-epic.html",
+      "project": "crime",
+      "errors": [],
+      "image": "assets/project-thumbs/version-d5dbaf37dcbc3c.jpg",
+      "title": "犯罪学 · Criminology",
+      "canvases": 1
+    },
+    {
+      "path": "assets/criminology-final.html",
+      "project": "crime",
+      "errors": [],
+      "image": "assets/project-thumbs/version-688f5be8228f41.jpg",
+      "title": "犯罪学 · 视觉宣传片",
+      "canvases": 1
+    },
+    {
+      "path": "assets/criminology-opus55.html",
+      "project": "crime",
+      "errors": [],
+      "image": "assets/project-thumbs/version-8ecb2aa8aeea13.jpg",
+      "title": "犯罪学｜看见真相，理解原因",
+      "canvases": 2
+    },
+    {
+      "path": "assets/criminology-preview.html",
+      "project": "crime",
+      "errors": [],
+      "image": "assets/project-thumbs/version-a9ff0b1a022de6.jpg",
+      "title": "犯罪学 · 079",
+      "canvases": 2
+    },
+    {
+      "path": "assets/criminology-styles.html",
+      "project": "crime",
+      "errors": [],
+      "image": "assets/project-thumbs/version-34efd070c59545.jpg",
+      "title": "犯罪学 / 三种风格",
+      "canvases": 0
+    },
+    {
+      "path": "assets/criminology-threejs.html",
+      "project": "crime",
+      "errors": [],
+      "image": "assets/project-thumbs/version-b9ac4a615c3000.jpg",
+      "title": "犯罪学视觉 · Three.js 版",
+      "canvases": 1
+    },
+    {
+      "path": "assets/criminology-ui-morph.html",
+      "project": "crime",
+      "errors": [],
+      "image": "assets/project-thumbs/version-53178701e7ae20.jpg",
+      "title": "犯罪学 UI 变形循环 · Criminology UI Morph",
+      "canvases": 1
+    },
+    {
+      "path": "assets/criminology-vertical.html",
+      "project": "crime",
+      "errors": [],
+      "image": "assets/project-thumbs/version-e4e9eeef722d4d.jpg",
+      "title": "犯罪学大纲 · 竖屏视觉",
+      "canvases": 1
+    },
+    {
+      "path": "out/opus55/first-draft.html",
+      "project": "crime",
+      "errors": [],
+      "image": "assets/project-thumbs/version-3152dfca120d29.jpg",
+      "title": "犯罪学｜看见真相，理解原因",
+      "canvases": 1
+    },
+    {
+      "path": "out/opus55/claude-revision-original.html",
+      "project": "crime",
+      "errors": [],
+      "image": "assets/project-thumbs/version-e245b374d8abb9.jpg",
+      "title": "犯罪学｜看见真相，理解原因",
+      "canvases": 1
+    },
+    {
+      "path": "out/opus55-cinematic/previous-2d.html",
+      "project": "crime",
+      "errors": [],
+      "image": "assets/project-thumbs/version-046d337773bacf.jpg",
+      "title": "犯罪学｜看见真相，理解原因",
+      "canvases": 1
+    },
+    {
+      "path": "abg_one_masterpiece.html",
+      "project": "abg",
+      "errors": [
+        "THREE is not defined"
+      ],
+      "image": "assets/project-thumbs/version-78f5aba5dee0b0.jpg",
+      "title": "αβΓ✻1 (ABG ONE) — QUANT MASTERPIECE (THREE.JS SHOWCASE)",
+      "canvases": 0
+    },
+    {
+      "path": "abg_one_opus55_trailer.html",
+      "project": "abg",
+      "errors": [],
+      "image": "assets/project-thumbs/version-4c576837cd8e94.jpg",
+      "title": "ABG ONE — getabg.one · three.js 版",
+      "canvases": 1
+    },
+    {
+      "path": "assets/getabg-promo.html",
+      "project": "abg",
+      "errors": [],
+      "image": "assets/project-thumbs/version-cb2aee8ab201ee.jpg",
+      "title": "ABG · Review the decision",
+      "canvases": 2
+    },
+    {
+      "path": "portfolio_15s_showreel.html",
+      "project": "reels",
+      "errors": [
+        "THREE is not defined"
+      ],
+      "image": "assets/project-thumbs/version-8db9a0271e0429.jpg",
+      "title": "MOTION DESIGNER // 15S MASTER SHOWREEL (PORTFOLIO 2026)",
+      "canvases": 2
+    },
+    {
+      "path": "portfolio_15s_acid_brutalist.html",
+      "project": "reels",
+      "errors": [
+        "THREE is not defined"
+      ],
+      "image": "assets/project-thumbs/version-a48e46bde7875c.jpg",
+      "title": "ACID BRUTALIST // 15S MOTION SHOWREEL (PORTFOLIO 2026)",
+      "canvases": 2
+    },
+    {
+      "path": "showreel-15s.html",
+      "project": "reels",
+      "errors": [],
+      "image": "assets/project-thumbs/version-2d37cfe338daf1.jpg",
+      "title": "Motion Designer Showreel - 15s",
+      "canvases": 1
+    },
+    {
+      "path": "showreel_2026.html",
+      "project": "reels",
+      "errors": [],
+      "image": "assets/project-thumbs/version-5af317e6c4d9f7.jpg",
+      "title": "Motion Designer Portfolio Showreel 2026",
+      "canvases": 1
+    },
+    {
+      "path": "assets/motion-lab.html",
+      "project": "reels",
+      "errors": [],
+      "image": "assets/project-thumbs/version-6d2f13d9f8741a.jpg",
+      "title": "Motion Lab · 视觉语言实验",
+      "canvases": 1
+    },
+    {
+      "path": "bear_birthday_mv.html",
+      "project": "birthday",
+      "errors": [],
+      "image": "assets/project-thumbs/version-7234cd22ba264d.jpg",
+      "title": "《小熊生日快乐》— 温暖童话 3D 音乐 MV (109 BPM)",
+      "canvases": 2
+    },
+    {
+      "path": "huanhui_ai_promo.html",
+      "project": "huanhui",
+      "errors": [
+        "THREE is not defined"
+      ],
+      "image": "assets/project-thumbs/version-fe44bea6679c26.jpg",
+      "title": "幻绘 AI — 电商详情页与卖点套图生成工作台 (60FPS 官方概念片预览)",
+      "canvases": 2
+    },
+    {
+      "path": "format-lab/hy4/01-mechanism/index.html",
+      "project": "format",
+      "errors": [],
+      "image": "assets/project-thumbs/version-25e6d2d3befd7b.jpg",
+      "title": "01 · 棘轮只许前进 | FORM LAB HY4",
+      "canvases": 1
+    },
+    {
+      "path": "format-lab/hy4/02-comparison/index.html",
+      "project": "format",
+      "errors": [],
+      "image": "assets/project-thumbs/version-58ff4e93b90c39.jpg",
+      "title": "02 · 卡片归位 | FORM LAB HY4",
+      "canvases": 0
+    },
+    {
+      "path": "format-lab/hy4/03-data-story/index.html",
+      "project": "format",
+      "errors": [],
+      "image": "assets/project-thumbs/version-cefb74933f1f93.jpg",
+      "title": "03 · 20 → 70 | FORM LAB HY4",
+      "canvases": 1
+    },
+    {
+      "path": "format-lab/hy4/04-exploded/index.html",
+      "project": "format",
+      "errors": [],
+      "image": "assets/project-thumbs/version-06aa8ff4417752.jpg",
+      "title": "04 · 手电筒拆装 | FORM LAB HY4",
+      "canvases": 1
+    },
+    {
+      "path": "format-lab/hy4/05-illustrated/index.html",
+      "project": "format",
+      "errors": [],
+      "image": "assets/project-thumbs/version-03020a4a3e381e.jpg",
+      "title": "05 · 一滴水 | FORM LAB HY4",
+      "canvases": 1
+    },
+    {
+      "path": "format-lab/hy4/06-spatial/index.html",
+      "project": "format",
+      "errors": [],
+      "image": "assets/project-thumbs/version-704f7f373297bb.jpg",
+      "title": "06 · 斜坡与拱门 | FORM LAB HY4",
+      "canvases": 1
+    },
+    {
+      "path": "format-lab/gemini38/01-mechanism/index.html",
+      "project": "format",
+      "errors": [],
+      "image": "assets/project-thumbs/version-99da0b2a6eb00c.jpg",
+      "title": "01 二维机制解释 · 棘轮与止逆",
+      "canvases": 0
+    },
+    {
+      "path": "format-lab/gemini38/02-comparison/index.html",
+      "project": "format",
+      "errors": [],
+      "image": "assets/project-thumbs/version-9db68464be30f3.jpg",
+      "title": "02 对比叙事 · 混乱卡片按颜色归位",
+      "canvases": 1
+    },
+    {
+      "path": "format-lab/gemini38/03-data-story/index.html",
+      "project": "format",
+      "errors": [],
+      "image": "assets/project-thumbs/version-3ef950ae8eb917.jpg",
+      "title": "03 数据叙事 · 100点矩阵高亮跃升",
+      "canvases": 1
+    },
+    {
+      "path": "format-lab/gemini38/05-illustrated/index.html",
+      "project": "format",
+      "errors": [],
+      "image": "assets/project-thumbs/version-531dd2023b725c.jpg",
+      "title": "05 手绘小故事 · 水滴落叶入土",
+      "canvases": 1
+    },
+    {
+      "path": "format-lab/hy4/index.html",
+      "project": "format",
+      "errors": [],
+      "image": "assets/project-thumbs/version-f635a1da377977.jpg",
+      "title": "FORM LAB / HY4 · 动画形式试做",
+      "canvases": 0
+    },
+    {
+      "path": "format-lab/gemini38/index.html",
+      "project": "format",
+      "errors": [],
+      "image": "assets/project-thumbs/version-18b0e0038e2cce.jpg",
+      "title": "动画形式探索 · Gemini 3.8 Flash 试做入口",
+      "canvases": 0
+    },
+    {
+      "path": "cutaway-demo/car-film.html",
+      "project": "cutaway",
+      "errors": [],
+      "image": "assets/project-thumbs/version-b9ca4bb0901eaf.jpg",
+      "title": "Vectra GT-9",
+      "canvases": 2
+    },
+    {
+      "path": "cutaway-demo/f1-film.html",
+      "project": "cutaway",
+      "errors": [],
+      "image": "assets/project-thumbs/version-f32186ae805962.jpg",
+      "title": "Apex F1-XX",
+      "canvases": 2
+    },
+    {
+      "path": "cutaway-demo/piranha-demo.html",
+      "project": "cutaway",
+      "errors": [],
+      "image": "assets/project-thumbs/version-e63ee76538a924.jpg",
+      "title": "piranha-demo",
+      "canvases": 2
+    },
+    {
+      "path": "cutaway-demo/piranha-film.html",
+      "project": "cutaway",
+      "errors": [],
+      "image": "assets/project-thumbs/version-459ed12a50c4ae.jpg",
+      "title": "piranha-film",
+      "canvases": 2
+    },
+    {
+      "path": "cutaway-demo/plane-film.html",
+      "project": "cutaway",
+      "errors": [],
+      "image": "assets/project-thumbs/version-91f630b63a480e.jpg",
+      "title": "Valkyrie FX-21",
+      "canvases": 2
+    },
+    {
+      "path": "cutaway-demo/tarantula-demo.html",
+      "project": "cutaway",
+      "errors": [],
+      "image": "assets/project-thumbs/version-dd5b3aba79481b.jpg",
+      "title": "tarantula-demo",
+      "canvases": 2
+    },
+    {
+      "path": "cutaway-demo/tarantula-film.html",
+      "project": "cutaway",
+      "errors": [],
+      "image": "assets/project-thumbs/version-cdd958c18bca5c.jpg",
+      "title": "tarantula-film",
+      "canvases": 2
+    },
+    {
+      "path": "cutaway-demo/wasp-demo.html",
+      "project": "cutaway",
+      "errors": [],
+      "image": "assets/project-thumbs/version-d59317e60ba53d.jpg",
+      "title": "wasp-demo",
+      "canvases": 2
+    },
+    {
+      "path": "cutaway-demo/wasp-film.html",
+      "project": "cutaway",
+      "errors": [],
+      "image": "assets/project-thumbs/version-4c86d5542a0493.jpg",
+      "title": "wasp-film",
+      "canvases": 2
+    },
+    {
+      "path": "cutaway/cutaway-out/dist/car-film.html",
+      "project": "cutaway",
+      "errors": [],
+      "image": "assets/project-thumbs/version-07569c32075ac6.jpg",
+      "title": "Vectra GT-9",
+      "canvases": 2
+    }
+  ]
+}

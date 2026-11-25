@@ -1,0 +1,367 @@
+{
+  "schemaVersion": 1,
+  "voice": {
+    "model": "gemini-3.8-flash-tts",
+    "name": "Puck",
+    "direction": "用标准普通话讲给一位好奇的朋友听。年轻、清亮、自然，有发现感；重音有轻重，保留必要的观察停顿。不要播音腔、广告叫卖、匀速念字或强行加速。只朗读正文，不朗读表演说明。"
+  },
+  "episodes": [
+    {
+      "id": "refraction",
+      "number": "01",
+      "title": "吸管为什么看起来折了？",
+      "structure": "现象 → 光路 → 看见的位置",
+      "question": "弯的是吸管，还是光？",
+      "summary": "从水面出射的光路，理解水下部分为何看起来错位。",
+      "sources": [
+        {
+          "id": "O1",
+          "title": "OpenStax · Refraction",
+          "url": "https://openstax.org/books/university-physics-volume-3/pages/1-3-refraction"
+        },
+        {
+          "id": "O2",
+          "title": "OpenStax · Apparent depth",
+          "url": "https://openstax.org/books/university-physics-volume-3/pages/2-3-images-formed-by-refraction"
+        }
+      ],
+      "caveat": "从水面观察的剖面示意；省略杯壁折射。虚像位置随视角变化，不用固定压缩比例代表所有角度。",
+      "segments": [
+        {
+          "id": "R01",
+          "label": "先看现象",
+          "scene": "phenomenon",
+          "text": "一根直吸管斜插进水里，看起来却像折了一下。",
+          "emphasis": "问题，带着好奇和一点惊讶。",
+          "facts": [
+            "O2"
+          ],
+          "start": 0.24,
+          "end": 6.12,
+          "audioFile": "R01-5d736e7bc34ea4fc.wav",
+          "voiceFingerprint": "5d736e7bc34ea4fc4a1d342868f3d2d3190af150f5792cab0d8d19f4bd0f0b3e"
+        },
+        {
+          "id": "R02",
+          "label": "看光怎样走",
+          "scene": "path",
+          "text": "先看水下这一点。从这里反射出来的光，要穿过水面，才能到达你的眼睛。",
+          "emphasis": "放缓一点，带观众追踪一个点。",
+          "facts": [
+            "O1"
+          ],
+          "start": 6.34,
+          "end": 13.54,
+          "audioFile": "R02-26a87de6499396e7.wav",
+          "voiceFingerprint": "26a87de6499396e7b4c081abdaee5dd98949678310ed9df6af1927ea489d7aaa"
+        },
+        {
+          "id": "R03",
+          "label": "在水面拐弯",
+          "scene": "bend",
+          "text": "光从水进入空气，斜着射出时，会偏离水面的垂线。这就是折射。",
+          "emphasis": "突出斜着射出和折射，术语清楚。",
+          "facts": [
+            "O1"
+          ],
+          "start": 13.76,
+          "end": 21.16,
+          "audioFile": "R03-618a3b90566d4d14.wav",
+          "voiceFingerprint": "618a3b90566d4d14669249d8b98e38b8ea7c0f3e1a904aa1f266761fb93a658e"
+        },
+        {
+          "id": "R04",
+          "label": "把光路倒着延长",
+          "scene": "extend",
+          "text": "把进入眼睛的光，沿直线反向延长，看到的位置就比真实位置浅。",
+          "emphasis": "按观察过程，反向延长后留一点停顿。",
+          "facts": [
+            "O2"
+          ],
+          "start": 21.38,
+          "end": 28.22,
+          "audioFile": "R04-72a530534e62abfe.wav",
+          "voiceFingerprint": "72a530534e62abfe872261e2912baf46cc0d21cbd4873d8d2d0b22fe345b1d2b"
+        },
+        {
+          "id": "R05",
+          "label": "两个部分错开了",
+          "scene": "compare",
+          "text": "水下那一段看起来抬高了，水上、水下两段的方向，看起来对不上了。",
+          "emphasis": "用自然的恍然大悟语气。",
+          "facts": [
+            "O2"
+          ],
+          "start": 28.439999999999998,
+          "end": 35.64,
+          "audioFile": "R05-ff8bf4cdb4f3a6f3.wav",
+          "voiceFingerprint": "ff8bf4cdb4f3a6f31f2224421554ee14265c08c7e454cdc5b80b54876f404731"
+        },
+        {
+          "id": "R06",
+          "label": "回到最初的问题",
+          "scene": "resolve",
+          "text": "吸管仍然是直的，改变方向的是光。换个角度，错位的样子也会变。",
+          "emphasis": "清楚收束，不喊口号。",
+          "facts": [
+            "O1",
+            "O2"
+          ],
+          "start": 35.86,
+          "end": 42.78,
+          "audioFile": "R06-0709dcede8ca4ccc.wav",
+          "voiceFingerprint": "0709dcede8ca4ccc78ec059470d332c5ab4673f0c17b87947d0bc8913120a5c4"
+        }
+      ],
+      "duration": 43.8,
+      "audioStatus": "generated-not-user-approved",
+      "audioFile": "audio/refraction.mp3",
+      "loudness": {
+        "input_i": "-17.74",
+        "input_tp": "0.07",
+        "input_lra": "4.30",
+        "input_thresh": "-28.22",
+        "output_i": "-17.39",
+        "output_tp": "-2.00",
+        "output_lra": "3.20",
+        "output_thresh": "-27.85",
+        "normalization_type": "dynamic",
+        "target_offset": "-0.61"
+      }
+    },
+    {
+      "id": "refrigerator",
+      "number": "02",
+      "title": "冰箱怎样把热搬出去？",
+      "structure": "任务 → 四步循环 → 能量收支",
+      "question": "冰箱里面冷，热去了哪里？",
+      "summary": "沿同一条制冷剂回路，观察吸热、压缩、放热和节流。",
+      "sources": [
+        {
+          "id": "E1",
+          "title": "U.S. DOE · Refrigeration system components",
+          "url": "https://www.energy.gov/sites/default/files/2022-01/mref-pa-tsd.pdf"
+        }
+      ],
+      "caveat": "常见蒸气压缩制冷的简化示意；部件位置、管路长度和颗粒颜色不是实机尺寸或分子模拟。散热器在部分机型中藏在侧壁。",
+      "segments": [
+        {
+          "id": "F01",
+          "label": "先找热的去向",
+          "scene": "phenomenon",
+          "text": "冰箱里很凉，可它运行时，为什么还要向房间散热？",
+          "emphasis": "像在厨房发现了一个矛盾，自然发问。",
+          "facts": [
+            "E1"
+          ],
+          "start": 0.24,
+          "end": 5.44,
+          "audioFile": "F01-f3b5f133ec6054f8.wav",
+          "voiceFingerprint": "f3b5f133ec6054f890f161e0ff6c76a232227ec76e8c137821656006195b7c25"
+        },
+        {
+          "id": "F02",
+          "label": "在里面吸热",
+          "scene": "absorb",
+          "text": "在箱内，低压制冷剂通过蒸发器，蒸发并吸收里面的热。",
+          "emphasis": "蒸发器慢一点，突出吸收热。",
+          "facts": [
+            "E1"
+          ],
+          "start": 5.66,
+          "end": 11.02,
+          "audioFile": "F02-3c03c29535429642.wav",
+          "voiceFingerprint": "3c03c2953542964296eb4f6cd7433ec6503c6ab6a08f8cfbb9d76222dd83589e"
+        },
+        {
+          "id": "F03",
+          "label": "压缩机做功",
+          "scene": "compress",
+          "text": "接着，压缩机消耗电能，把气体压到更高的压力和温度。",
+          "emphasis": "顺着管路讲，消耗电能稍作重音。",
+          "facts": [
+            "E1"
+          ],
+          "start": 11.24,
+          "end": 16.32,
+          "audioFile": "F03-92c29023526f2ae1.wav",
+          "voiceFingerprint": "92c29023526f2ae117caedfd73ece5e935f211fdbcbc405542a190963dab667e"
+        },
+        {
+          "id": "F04",
+          "label": "向房间放热",
+          "scene": "release",
+          "text": "高温制冷剂经过冷凝器，向房间放热，并逐渐凝结成液体。",
+          "emphasis": "放热和液体说清楚，节奏自然。",
+          "facts": [
+            "E1"
+          ],
+          "start": 16.54,
+          "end": 22.46,
+          "audioFile": "F04-e9bfd2e7e30609ef.wav",
+          "voiceFingerprint": "e9bfd2e7e30609efceb11e77829d3b1023becc02f400a8895c07fdceb15e0f71"
+        },
+        {
+          "id": "F05",
+          "label": "降压，回到起点",
+          "scene": "expand",
+          "text": "再通过节流装置降压，回到适合蒸发吸热的状态，开始下一轮。",
+          "emphasis": "最后自然连回前面的蒸发器。",
+          "facts": [
+            "E1"
+          ],
+          "start": 22.68,
+          "end": 28.36,
+          "audioFile": "F05-809c248b421e90f6.wav",
+          "voiceFingerprint": "809c248b421e90f6541110ee3937f22ba25625e11e9767c1d153268cc66d4cc8"
+        },
+        {
+          "id": "F06",
+          "label": "把收支合起来",
+          "scene": "balance",
+          "text": "在稳定循环中，排到房间的热，既有从箱内搬走的热，也有冰箱消耗的电能。",
+          "emphasis": "用既有、也有组织两部分，不匀速念。",
+          "facts": [
+            "E1"
+          ],
+          "start": 28.58,
+          "end": 35.66,
+          "audioFile": "F06-1ed8e6ba17f801b8.wav",
+          "voiceFingerprint": "1ed8e6ba17f801b85ac3c9c0b80bdd4e0ec321693f1fdee8bc806288d06bdac7"
+        }
+      ],
+      "duration": 36.68,
+      "audioStatus": "generated-not-user-approved",
+      "audioFile": "audio/refrigerator.mp3",
+      "loudness": {
+        "input_i": "-17.12",
+        "input_tp": "0.21",
+        "input_lra": "2.50",
+        "input_thresh": "-27.47",
+        "output_i": "-18.22",
+        "output_tp": "-2.00",
+        "output_lra": "1.90",
+        "output_thresh": "-28.55",
+        "normalization_type": "dynamic",
+        "target_offset": "0.22"
+      }
+    },
+    {
+      "id": "power-energy",
+      "number": "03",
+      "title": "功率大，一定更费电吗？",
+      "structure": "直觉对比 → 分开量纲 → 累计验证",
+      "question": "2000 瓦，一定比 100 瓦费电？",
+      "summary": "用两台理想恒功率设备比较功率、使用时间和总电量。",
+      "sources": [
+        {
+          "id": "W1",
+          "title": "U.S. EIA · Measuring electricity",
+          "url": "https://www.eia.gov/energyexplained/electricity/measuring-electricity.php"
+        }
+      ],
+      "caveat": "理想恒功率算例，不代表具体电器的实测耗电。实际设备的功率会变化，应按运行状态或实测累计电量比较。",
+      "segments": [
+        {
+          "id": "P01",
+          "label": "先猜哪台耗电多",
+          "scene": "phenomenon",
+          "text": "两千瓦的设备，和一百瓦的设备，哪台用的电更多？",
+          "emphasis": "自然提问，让观众先猜。",
+          "facts": [
+            "W1"
+          ],
+          "start": 0.24,
+          "end": 4.542416666666667,
+          "audioFile": "P01-c34e08315e2423cf.wav",
+          "voiceFingerprint": "c34e08315e2423cf653ab9b220c9f560420aaee1387a3c4447c917c73ee2c4e3"
+        },
+        {
+          "id": "P02",
+          "label": "先分清功率",
+          "scene": "power",
+          "text": "瓦表示功率，告诉你此刻消耗电能有多快。还得看，它用了多久。",
+          "emphasis": "多快、多久形成对比，但不要夸张。",
+          "facts": [
+            "W1"
+          ],
+          "start": 4.762416666666667,
+          "end": 11.420708333333334,
+          "audioFile": "P02-69d7637c92084368.wav",
+          "voiceFingerprint": "69d7637c9208436886b34626cd03361259996072f793a0c4ea488879a94431ed"
+        },
+        {
+          "id": "P03",
+          "label": "第一台，用得很短",
+          "scene": "first",
+          "text": "假设功率保持不变。两千瓦的设备，运行三分钟，用电零点一千瓦时。",
+          "emphasis": "数值清楚，三分钟后自然停顿。",
+          "facts": [
+            "W1"
+          ],
+          "start": 11.640708333333333,
+          "end": 18.004541666666665,
+          "audioFile": "P03-732bd50fe67c4013.wav",
+          "voiceFingerprint": "732bd50fe67c4013a463abaaaaed76765b7db2e809f71005398fa34c8f411378"
+        },
+        {
+          "id": "P04",
+          "label": "第二台，用得更久",
+          "scene": "second",
+          "text": "一百瓦的设备，连续运行两小时，用电零点二千瓦时，反而更多。",
+          "emphasis": "反而更多有发现感，不喊。",
+          "facts": [
+            "W1"
+          ],
+          "start": 18.224541666666667,
+          "end": 24.338708333333333,
+          "audioFile": "P04-a9954163289e9fca.wav",
+          "voiceFingerprint": "a9954163289e9fca2a3c583ee098ca823c9343950e4399d8876cfe7f40432044"
+        },
+        {
+          "id": "P05",
+          "label": "看的是累计电量",
+          "scene": "area",
+          "text": "功率像快慢，电量看累计。恒定功率乘以时间，才得到用掉的电量。",
+          "emphasis": "用两个短句让概念落下。",
+          "facts": [
+            "W1"
+          ],
+          "start": 24.558708333333335,
+          "end": 31.39554166666667,
+          "audioFile": "P05-ab4673b9f0a1e96c.wav",
+          "voiceFingerprint": "ab4673b9f0a1e96c13daad2dd48dcd6b682a67ab6279f02fd0aad086705b4bfe"
+        },
+        {
+          "id": "P06",
+          "label": "带着条件收尾",
+          "scene": "resolve",
+          "text": "所以，比较耗电，要一起看功率和使用时间。实际电器，还要看运行状态。",
+          "emphasis": "清晰收束，最后一句讲出适用范围。",
+          "facts": [
+            "W1"
+          ],
+          "start": 31.61554166666667,
+          "end": 38.06425,
+          "audioFile": "P06-5f1545eb05164ff9.wav",
+          "voiceFingerprint": "5f1545eb05164ff943687c556d1d3eb548083224af2e80c24a9727e958b022fa"
+        }
+      ],
+      "duration": 39.08425,
+      "audioStatus": "generated-not-user-approved",
+      "audioFile": "audio/power-energy.mp3",
+      "loudness": {
+        "input_i": "-17.90",
+        "input_tp": "-1.14",
+        "input_lra": "6.10",
+        "input_thresh": "-28.43",
+        "output_i": "-17.85",
+        "output_tp": "-2.00",
+        "output_lra": "5.40",
+        "output_thresh": "-28.30",
+        "normalization_type": "dynamic",
+        "target_offset": "-0.15"
+      }
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+/Users/fuhongbo/.gemini/config/skills/motion-director-skill/SKILL.md

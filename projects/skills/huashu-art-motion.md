@@ -1,0 +1,1 @@
+/Users/fuhongbo/.agents/skills/huashu-art-motion/SKILL.md

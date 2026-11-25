@@ -1,0 +1,1 @@
+/Users/fuhongbo/.gemini/config/skills/ai-teardown/SKILL.md

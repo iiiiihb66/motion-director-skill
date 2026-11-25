@@ -1,0 +1,8 @@
+{
+  "checks": {
+    "poemAndOriginalBoardSearch": true,
+    "catalogOpensPlayablePreview": true,
+    "originalSourceClearlyLabeled": true
+  },
+  "errors": []
+}

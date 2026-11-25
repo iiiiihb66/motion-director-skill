@@ -1,0 +1,10 @@
+{
+  "fingerprint": "1ed8e6ba17f801b85ac3c9c0b80bdd4e0ec321693f1fdee8bc806288d06bdac7",
+  "requestedModel": "gemini-3.8-flash-tts",
+  "responseModel": "gemini-3.8-flash-tts",
+  "voice": "Puck",
+  "text": "在稳定循环中，排到房间的热，既有从箱内搬走的热，也有冰箱消耗的电能。",
+  "frames": 169920,
+  "sampleRate": 24000,
+  "duration": 7.08
+}

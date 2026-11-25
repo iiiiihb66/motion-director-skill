@@ -1,0 +1,10 @@
+{
+  "fingerprint": "809c248b421e90f6541110ee3937f22ba25625e11e9767c1d153268cc66d4cc8",
+  "requestedModel": "gemini-3.8-flash-tts",
+  "responseModel": "gemini-3.8-flash-tts",
+  "voice": "Puck",
+  "text": "再通过节流装置降压，回到适合蒸发吸热的状态，开始下一轮。",
+  "frames": 136320,
+  "sampleRate": 24000,
+  "duration": 5.68
+}

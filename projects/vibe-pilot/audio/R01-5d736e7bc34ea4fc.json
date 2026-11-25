@@ -1,0 +1,10 @@
+{
+  "fingerprint": "5d736e7bc34ea4fc4a1d342868f3d2d3190af150f5792cab0d8d19f4bd0f0b3e",
+  "requestedModel": "gemini-3.8-flash-tts",
+  "responseModel": "gemini-3.8-flash-tts",
+  "voice": "Puck",
+  "text": "一根直吸管斜插进水里，看起来却像折了一下。",
+  "frames": 141120,
+  "sampleRate": 24000,
+  "duration": 5.88
+}

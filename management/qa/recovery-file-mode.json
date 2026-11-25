@@ -1,0 +1,119 @@
+{
+  "date": "2026-11-14",
+  "checks": [
+    {
+      "path": "projects/recovered-pages/nanhu.html",
+      "id": "nanhu",
+      "type": "page",
+      "errors": [],
+      "consoleErrors": [],
+      "ready": true,
+      "image": "management/qa/recovery-nanhu.jpg"
+    },
+    {
+      "path": "projects/recovered-pages/jiang-waterink.html",
+      "id": "jiang-waterink",
+      "type": "page",
+      "errors": [],
+      "consoleErrors": [],
+      "ready": true,
+      "image": "management/qa/recovery-jiang-waterink.jpg"
+    },
+    {
+      "id": "renderer-abg",
+      "path": "projects/recovered-renderer/abg.html",
+      "type": "renderer",
+      "errors": [],
+      "consoleErrors": [],
+      "ready": true,
+      "image": "management/qa/recovery-renderer-abg.jpg",
+      "engineErrors": [],
+      "audioDuration": 34,
+      "playback": true
+    },
+    {
+      "id": "renderer-criminology",
+      "path": "projects/recovered-renderer/criminology.html",
+      "type": "renderer",
+      "errors": [],
+      "consoleErrors": [],
+      "ready": true,
+      "image": "management/qa/recovery-renderer-criminology.jpg",
+      "engineErrors": [],
+      "audioDuration": 33.925397,
+      "playback": true
+    },
+    {
+      "id": "opus-jingyesi",
+      "path": "projects/recovered-opus/jingyesi.html",
+      "type": "opus",
+      "errors": [],
+      "consoleErrors": [],
+      "ready": true,
+      "image": "management/qa/recovery-opus-jingyesi.jpg"
+    },
+    {
+      "id": "opus-mv",
+      "path": "projects/recovered-opus/mv.html",
+      "type": "mv",
+      "errors": [],
+      "consoleErrors": [],
+      "ready": true,
+      "image": "management/qa/recovery-opus-mv.jpg"
+    },
+    {
+      "id": "art-gallery",
+      "path": "projects/recovered-art/gallery.html",
+      "type": "art",
+      "errors": [],
+      "consoleErrors": [],
+      "ready": true,
+      "image": "management/qa/recovery-art-gallery.jpg"
+    },
+    {
+      "id": "art-vox-clip",
+      "path": "projects/recovered-art/clip-y2_vox.html",
+      "type": "art",
+      "errors": [],
+      "consoleErrors": [],
+      "ready": true,
+      "image": "management/qa/recovery-art-vox-clip.jpg"
+    },
+    {
+      "id": "art-spacex-vox",
+      "path": "projects/recovered-art/spacex-vox.html",
+      "type": "art",
+      "errors": [],
+      "consoleErrors": [],
+      "ready": true,
+      "image": "management/qa/recovery-art-spacex-vox.jpg"
+    },
+    {
+      "path": "projects/recovered-pages/hy4-lens.html",
+      "id": "hy4-lens",
+      "type": "page",
+      "errors": [],
+      "consoleErrors": [],
+      "ready": true,
+      "image": "management/qa/recovery-hy4-lens.jpg"
+    },
+    {
+      "path": "projects/recovered-pages/gemini-exploded.html",
+      "id": "gemini-exploded",
+      "type": "page",
+      "errors": [],
+      "consoleErrors": [],
+      "ready": true,
+      "image": "management/qa/recovery-gemini-exploded.jpg"
+    },
+    {
+      "path": "projects/recovered-pages/gemini-spatial.html",
+      "id": "gemini-spatial",
+      "type": "page",
+      "errors": [],
+      "consoleErrors": [],
+      "ready": true,
+      "image": "management/qa/recovery-gemini-spatial.jpg"
+    }
+  ]
+}

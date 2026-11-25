@@ -1,0 +1,11 @@
+{
+  "fingerprint": "ab4673b9f0a1e96c13daad2dd48dcd6b682a67ab6279f02fd0aad086705b4bfe",
+  "engine": "gemini",
+  "requestedModel": "gemini-3.8-flash-tts",
+  "responseModel": "gemini-3.8-flash-tts",
+  "voice": "Puck",
+  "text": "功率像快慢，电量看累计。恒定功率乘以时间，才得到用掉的电量。",
+  "frames": 328168,
+  "sampleRate": 48000,
+  "duration": 6.836833333333334
+}

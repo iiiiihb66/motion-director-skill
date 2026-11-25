@@ -1,0 +1,20 @@
+{
+  "date": "2026-11-15",
+  "method": "independent script / source review before speech generation",
+  "reviewer": "review_pilot_scripts",
+  "changesApplied": [
+    "R01",
+    "R02",
+    "R05",
+    "F04",
+    "F06"
+  ],
+  "visualInvariants": [
+    "water-to-air real rays point toward eye; virtual extensions dashed",
+    "apparent depth solved per viewing angle, not a universal 3/4 scale",
+    "refrigerant vapor enters compressor; heat flows into evaporator and out of condenser",
+    "energy balance assumes stable cycle",
+    "power/time area comparison must use common physical axes"
+  ],
+  "status": "script ready for web prototype; visual and audio review still required"
+}

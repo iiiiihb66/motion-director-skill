@@ -1,0 +1,10 @@
+{
+  "fingerprint": "e9bfd2e7e30609efceb11e77829d3b1023becc02f400a8895c07fdceb15e0f71",
+  "requestedModel": "gemini-3.8-flash-tts",
+  "responseModel": "gemini-3.8-flash-tts",
+  "voice": "Puck",
+  "text": "高温制冷剂经过冷凝器，向房间放热，并逐渐凝结成液体。",
+  "frames": 142080,
+  "sampleRate": 24000,
+  "duration": 5.92
+}

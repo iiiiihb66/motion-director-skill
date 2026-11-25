@@ -1,0 +1,22 @@
+{
+  "date": "2026-11-14",
+  "captures": [
+    {
+      "file": "chunfen_mono_color.html",
+      "time": 8.8,
+      "image": "assets/project-thumbs/chunfen-actual.jpg"
+    },
+    {
+      "file": "quantum_odyssey_showreel.html",
+      "time": 7.9,
+      "image": "assets/project-thumbs/quantum-actual.jpg"
+    }
+  ],
+  "checks": {
+    "poetryAliases": true,
+    "geminiSourceSearch": true,
+    "filenameAndOrigin": true,
+    "crossStageSearch": true
+  },
+  "errors": []
+}

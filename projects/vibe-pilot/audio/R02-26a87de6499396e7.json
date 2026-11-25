@@ -1,0 +1,10 @@
+{
+  "fingerprint": "26a87de6499396e7b4c081abdaee5dd98949678310ed9df6af1927ea489d7aaa",
+  "requestedModel": "gemini-3.8-flash-tts",
+  "responseModel": "gemini-3.8-flash-tts",
+  "voice": "Puck",
+  "text": "先看水下这一点。从这里反射出来的光，要穿过水面，才能到达你的眼睛。",
+  "frames": 172800,
+  "sampleRate": 24000,
+  "duration": 7.2
+}
